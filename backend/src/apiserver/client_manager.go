@@ -17,19 +17,21 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/VividCortex/mysqlerr"
+	"github.com/go-sql-driver/mysql"
 	"time"
 
 	workflowclient "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/kubeflow/pipelines/backend/src/apiserver/client"
 	"github.com/kubeflow/pipelines/backend/src/apiserver/model"
 	"github.com/kubeflow/pipelines/backend/src/apiserver/storage"
 	"github.com/kubeflow/pipelines/backend/src/common/util"
 	scheduledworkflowclient "github.com/kubeflow/pipelines/backend/src/crd/pkg/client/clientset/versioned/typed/scheduledworkflow/v1alpha1"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	minio "github.com/minio/minio-go"
+	"github.com/minio/minio-go"
 )
 
 const (
@@ -159,7 +161,14 @@ func initDBClient(initConnectionTimeout time.Duration) *storage.DB {
 	response = db.Model(&model.RunMetric{}).
 		AddForeignKey("RunUUID", "run_details(UUID)", "CASCADE" /* onDelete */, "CASCADE" /* update */)
 	if response.Error != nil {
-		glog.Fatalf("Failed to create a foreign key for RunID in run_metrics table. Error: %s", response.Error)
+		// The GORM library handles duplicate key fine but in case two threads creating at the same time
+		// it would run into the race condition.
+		// https://github.com/jinzhu/gorm/blob/master/scope.go#L1220
+		// We should ignore the failure of duplicate foreign key
+		sqlError, ok := err.(*mysql.MySQLError)
+		if !ok && sqlError.Number != mysqlerr.ER_DUP_KEY {
+			glog.Fatalf("Failed to create a foreign key for RunID in run_metrics table. Error: %s", response.Error)
+		}
 	}
 	return storage.NewDB(db.DB(), storage.NewMySQLDialect())
 }
