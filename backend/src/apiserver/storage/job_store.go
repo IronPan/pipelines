@@ -47,7 +47,7 @@ func (s *JobStore) ListJobs(
 	}
 
 	// Add filter condition
-	filteredSelectBuilder, err := s.toFilteredQuery(filterContext)
+	filteredSelectBuilder, err := s.buildFilteredQuery(filterContext)
 	if err != nil {
 		return errorF(err)
 	}
@@ -81,7 +81,7 @@ func (s *JobStore) ListJobs(
 	return jobs[:opts.PageSize], npt, err
 }
 
-func (s *JobStore) toFilteredQuery(filterContext *common.FilterContext) (sq.SelectBuilder, error) {
+func (s *JobStore) buildFilteredQuery(filterContext *common.FilterContext) (sq.SelectBuilder, error) {
 	selectBuilder := sq.Select("*").From("jobs")
 	if filterContext.ReferenceKey != nil {
 		resourceReferenceFilter, args, err := sq.Select("ResourceUUID").

@@ -68,7 +68,7 @@ func (s *RunStore) ListRuns(
 	}
 
 	// Add filter condition
-	filteredSelectBuilder, err := s.toFilteredQuery(filterContext)
+	filteredSelectBuilder, err := s.buildFilteredQuery(filterContext)
 	if err != nil {
 		return errorF(err)
 	}
@@ -108,7 +108,7 @@ func (s *RunStore) ListRuns(
 	return runs[:opts.PageSize], npt, err
 }
 
-func (s *RunStore) toFilteredQuery(filterContext *common.FilterContext) (sq.SelectBuilder, error) {
+func (s *RunStore) buildFilteredQuery(filterContext *common.FilterContext) (sq.SelectBuilder, error) {
 	selectBuilder := sq.Select("*").From("run_details")
 	if filterContext.ReferenceKey != nil {
 		resourceReferenceFilter, args, err := sq.Select("ResourceUUID").
