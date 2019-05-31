@@ -1,4 +1,5 @@
 steps:
 
+
 - name: gcr.io/cloud-builders/gsutil
-  args: ['cp', '/workspace/preprocess', 'gs://kfpci/$COMMIT_SHA/preprocess']
+  args: ['cp', '-r', '/workspace/experiment/ci/resnet-cmle/preprocess', 'gs://kfpci/$COMMIT_SHA/preprocess']
