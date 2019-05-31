@@ -199,7 +199,7 @@ message Pipeline {
   // Optional input field. Describing the purpose of the job.
   string description = 4;
 
-  // Output. The default version of the pipeline. Always exist.
+  // The default version of the pipeline. Always not empty.
   Version default_version = 8;
 
   // In case any error happens retrieving a pipeline field, only pipeline ID
@@ -218,9 +218,10 @@ message Version {
   // Output. The input parameters for this pipeline.
   repeated Parameter parameters = 2;
 
+  // Input.
   CodeSource source = 3;
 
-  // The URL to the source of the pipeline. This is required when creating the
+  // Input. The URL to the source of the pipeline. This is required when creating the
   // pipeine through CreatePipeline API.
   Url url = 4;
 }
