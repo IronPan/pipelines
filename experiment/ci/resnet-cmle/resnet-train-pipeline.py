@@ -64,7 +64,7 @@ def resnet_train_op(project_id, data_dir, output: 'GcsUri', region: 'GcpRegion',
         region='us-central1',
         python_module='trainer.resnet_main',
         package_uris=json.dumps(
-            [os.path.join(args.package_base_dir, 'trainer/trainer-1.0.tar.gz')]),
+            [os.path.join(args.package_base_dir, 'trainer/trainer.tar.gz')]),
         job_dir=output,
         args=json.dumps([
             '--data_dir', str(data_dir),
@@ -140,4 +140,3 @@ def resnet_train(
 if __name__ == '__main__':
     import kfp.compiler as compiler
     compiler.Compiler().compile(resnet_train, __file__ + '.zip')
-    

@@ -11,8 +11,14 @@ steps:
   args: ['cp', '/workspace/train.tar.gz', 'gs://$REPO_NAME/$COMMIT_SHA/train/train.tar.gz']
   id:   'UploadTrainingCode'
   waitFor: ['PackageTrainingCode']
-
-
+- name: 'python:3-alpine'
+  entrypoint: '/bin/sh'
+  args: ['-c', 'cd ${_CODE_PATH}/resnet_model; pip install pip3 install https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz --upgrade; python resnet-train-pipeline.py; cp resnet-train-pipeline.zip /workspace/resnet-train-pipeline.zip']
+  id:   'PackagePipeline'
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', '/workspace/resnet-train-pipeline.zip', 'gs://$REPO_NAME/$COMMIT_SHA/resnet-train-pipeline.zip']
+  id:   'UploadPipeline'
+  waitFor: ['PackagePipeline']
 
 substitutions:
   _CODE_PATH: /workspace/experiment/ci/resnet-cmle
