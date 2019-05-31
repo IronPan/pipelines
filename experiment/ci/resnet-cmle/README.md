@@ -7,6 +7,13 @@ The pipeline consists of two steps
 
 ## Setup
 - Fork the code to your own git repo.
-- Go to your [cloud build](https://pantheon.corp.google.com/cloud-build) page, and set up cloud build to point to the [.cloudbuild.yaml](.cloudbuild.yaml).
-![alt text](cloudbuild_config.png)
-- Edit the code, and the cloud build would trigger a new job. The job will package the new code to the GCS bucket in the same project.
+- Go to your [cloud build](https://pantheon.corp.google.com/cloud-build) page, and set up cloud build to point to the [.cloudbuild.yaml](.cloudbuild.yaml), similar to below.
+![alt text](etc/cloudbuild_config.png)
+- Create a GCS bucket in the same project with the name of your repo
+    ```
+    gsutil mb gs://github_[your_github_username]_pipelines
+    ```
+- And you are all set. If you edit the source code, the cloud build would trigger a new job. The job will 
+  - Package the new code to the GCS bucket, under a git commit SHA versioned subfolder.
+  - Compile the latest Pipeline code into a tarball package ready to upload to Kubeflow Pipeline.
+![alt text](etc/gcs.png)
