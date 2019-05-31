@@ -1,5 +1,18 @@
 steps:
-
-
 - name: gcr.io/cloud-builders/gsutil
-  args: ['cp', '-r', '/workspace/experiment/ci/resnet-cmle/preprocess', 'gs://kfpci/$COMMIT_SHA/preprocess']
+  # TODO relative path to local file?
+  args: ['cp', '-r', '${_CODE_PATH}/preprocess', 'gs://$REPO_NAME/$COMMIT_SHA/preprocess']
+  id: 'UploadPreprocessCode'
+- name: 'python:2-alpine'
+  entrypoint: '/bin/sh'
+  args: ['-c', 'cd ${_CODE_PATH}/resnet_model; python setup.py sdis; cp dist/*.tar.gz /workspace/train.tar.gz']
+  id:   'PackageTrainingCode'
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', '/workspace/train.tar.gz', 'gs://$REPO_NAME/$COMMIT_SHA/train/train.tar.gz']
+  id:   'UploadTrainingCode'
+  waitFor: ['PackageTrainingCode']
+
+
+
+substitutions:
+  _CODE_PATH: /workspace/experiment/ci/resnet-cmle
