@@ -20,13 +20,6 @@ import kfp.components as comp
 import datetime
 import json
 import os
-import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--package_base_dir', help='The base dir for python packages.', 
-    type=str, 
-    default='gs://ml-pipeline-playground/samples/ml_engine/resnet-cmle/')
-args = parser.parse_args()
 
 dataflow_python_op = comp.load_component_from_url(
     'https://raw.githubusercontent.com/kubeflow/pipelines/74d8e592174ae90175f66c3c00ba76a835cfba6d/components/gcp/dataflow/launch_python/component.yaml')
@@ -35,15 +28,14 @@ cloudml_train_op = comp.load_component_from_url(
 cloudml_deploy_op = comp.load_component_from_url(
     'https://raw.githubusercontent.com/kubeflow/pipelines/74d8e592174ae90175f66c3c00ba76a835cfba6d/components/gcp/ml_engine/deploy/component.yaml')
 
-# PACKAGE_BASE_DIR = 'gs://ml-pipeline-playground/samples/ml_engine/resnet-cmle/'
 
 def resnet_preprocess_op(project_id: 'GcpProject', output: 'GcsUri', staging_dir: 'GcsUri', train_csv: 'GcsUri[text/csv]',
                          validation_csv: 'GcsUri[text/csv]', labels, train_size: 'Integer', validation_size: 'Integer',
                          step_name='preprocess'):
     return dataflow_python_op(
-        python_file_path=os.path.join(args.package_base_dir, 'preprocess/preprocess.py'),
+        python_file_path='gs://ml-pipeline-playground/samples/ml_engine/resnet-cmle/preprocess/preprocess.py',
         project_id=project_id,
-        requirements_file_path=os.path.join(args.package_base_dir, 'preprocess/requirements.txt'),
+        requirements_file_path='gs://ml-pipeline-playground/samples/ml_engine/resnet-cmle/preprocess/requirements.txt',
         staging_dir=staging_dir,
         args=json.dumps([
             '--train_csv', str(train_csv),
@@ -64,7 +56,7 @@ def resnet_train_op(project_id, data_dir, output: 'GcsUri', region: 'GcpRegion',
         region='us-central1',
         python_module='trainer.resnet_main',
         package_uris=json.dumps(
-            [os.path.join(args.package_base_dir, 'trainer/trainer-1.0.tar.gz')]),
+            ['gs://ml-pipeline-playground/samples/ml_engine/resnet-cmle/trainer/trainer-1.0.tar.gz']),
         job_dir=output,
         args=json.dumps([
             '--data_dir', str(data_dir),
