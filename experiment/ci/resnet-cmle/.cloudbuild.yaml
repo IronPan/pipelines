@@ -13,6 +13,5 @@ steps:
   waitFor: ['PackageTrainingCode']
 
 
-
 substitutions:
   _CODE_PATH: /workspace/experiment/ci/resnet-cmle
