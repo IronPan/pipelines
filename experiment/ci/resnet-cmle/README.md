@@ -14,6 +14,6 @@ The pipeline consists of two steps
     gsutil mb gs://github_[your_github_username]_pipelines
     ```
 - And you are all set. If you edit the source code, the cloud build would trigger a new job. The job will 
-  - Package the new code to the GCS bucket, under a git commit SHA versioned subfolder.
-  - Compile the latest Pipeline code into a tarball package ready to upload to Kubeflow Pipeline.
+  - Package the latest Dataflow and CMLE code to the GCS bucket, under a git commit SHA versioned subfolder.
+  - Compile the latest Pipeline code to a tarball package, pointing to the latest Dataflow/CMLE code. The package is ready to upload to Kubeflow Pipeline UI.
 ![alt text](etc/gcs.png)
