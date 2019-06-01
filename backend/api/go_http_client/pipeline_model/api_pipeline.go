@@ -20,8 +20,6 @@ package pipeline_model
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"strconv"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -37,6 +35,9 @@ type APIPipeline struct {
 	// Format: date-time
 	CreatedAt strfmt.DateTime `json:"created_at,omitempty"`
 
+	// The default version of the pipeline. Always not empty.
+	DefaultVersion *APIVersion `json:"default_version,omitempty"`
+
 	// Optional input field. Describing the purpose of the job.
 	Description string `json:"description,omitempty"`
 
@@ -51,13 +52,6 @@ type APIPipeline struct {
 	// Optional input field. Pipeline name provided by user. If not specified,
 	// file name is used as pipeline name.
 	Name string `json:"name,omitempty"`
-
-	// Output. The input parameters for this pipeline.
-	Parameters []*APIParameter `json:"parameters"`
-
-	// The URL to the source of the pipeline. This is required when creating the
-	// pipeine through CreatePipeline API.
-	URL *APIURL `json:"url,omitempty"`
 }
 
 // Validate validates this api pipeline
@@ -68,11 +62,7 @@ func (m *APIPipeline) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateParameters(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateURL(formats); err != nil {
+	if err := m.validateDefaultVersion(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -95,41 +85,16 @@ func (m *APIPipeline) validateCreatedAt(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *APIPipeline) validateParameters(formats strfmt.Registry) error {
+func (m *APIPipeline) validateDefaultVersion(formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Parameters) { // not required
+	if swag.IsZero(m.DefaultVersion) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.Parameters); i++ {
-		if swag.IsZero(m.Parameters[i]) { // not required
-			continue
-		}
-
-		if m.Parameters[i] != nil {
-			if err := m.Parameters[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("parameters" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
-	return nil
-}
-
-func (m *APIPipeline) validateURL(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.URL) { // not required
-		return nil
-	}
-
-	if m.URL != nil {
-		if err := m.URL.Validate(formats); err != nil {
+	if m.DefaultVersion != nil {
+		if err := m.DefaultVersion.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("url")
+				return ve.ValidateName("default_version")
 			}
 			return err
 		}
