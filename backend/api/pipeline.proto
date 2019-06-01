@@ -94,7 +94,7 @@ service PipelineService {
   rpc CreateVersion(CreateVersionRequest) returns (Version) {
     option (google.api.http) = {
       post: "/apis/v1beta1/pipelines/{pipeline_id}/versions"
-      body: "pipeline"
+      body: "version"
     };
   }
 
@@ -216,14 +216,14 @@ message Version {
   google.protobuf.Timestamp created_at = 2;
 
   // Output. The input parameters for this pipeline.
-  repeated Parameter parameters = 2;
+  repeated Parameter parameters = 3;
 
   // Input.
-  CodeSource source = 3;
+  CodeSource code_source = 4;
 
   // Input. The URL to the source of the pipeline. This is required when creating the
   // pipeine through CreatePipeline API.
-  Url url = 4;
+  Url url = 5;
 }
 
 message CodeSource {
