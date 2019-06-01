@@ -21,13 +21,13 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null && pwd)"
 function run-proxy-agent {
   # Start the proxy process
   # https://github.com/google/inverting-proxy/blob/master/agent/Dockerfile
-  # Connect proxy agent to ambassador so anything registered to ambassador can be transparently accessed.
+  # Connect proxy agent to Kubeflow Pipelines UI
   /opt/bin/proxy-forwarding-agent \
         --debug=${DEBUG} \
         --proxy=${PROXY_URL} \
         --proxy-timeout=${PROXY_TIMEOUT} \
         --backend=${BACKEND_ID} \
-        --host=${AMBASSADOR_SERVICE_HOST}:${AMBASSADOR_SERVICE_PORT} \
+        --host=${ML_PIPELINE_UI_SERVICE_HOST}:${ML_PIPELINE_UI_SERVICE_PORT} \
         --shim-websockets=true \
         --shim-path=websocket-shim \
         --health-check-path=${HEALTH_CHECK_PATH} \
@@ -62,7 +62,7 @@ fi
 echo "Proxy URL from the config: ${PROXY_URL}"
 
 # Register the proxy agent
-VM_ID=$(curl -H 'Metadata-Flavor: Google' "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?format=full&audience=${PROXY_URL}/request-endpoint"  2>/dev/null)
+VM_ID=$(curl -H 'Metadata-Flavor: Google' "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?format=full&audience=${PROXY_URL}/request-service-account-endpoint"  2>/dev/null)
 RESULT_JSON=$(curl -H "Authorization: Bearer $(gcloud auth print-access-token)" -H "X-Inverting-Proxy-VM-ID: ${VM_ID}" -d "" "${PROXY_URL}/request-service-account-endpoint" 2>/dev/null)
 echo "Response from the registration server: ${RESULT_JSON}"
 

@@ -1,0 +1,24 @@
+steps:
+- name: gcr.io/cloud-builders/gsutil
+  # TODO relative path to local file?
+  args: ['cp', '-r', '${_CODE_PATH}/preprocess', 'gs://$REPO_NAME/$COMMIT_SHA/preprocess']
+  id: 'UploadPreprocessCode'
+- name: 'python:2-alpine'
+  entrypoint: '/bin/sh'
+  args: ['-c', 'cd ${_CODE_PATH}/train; python setup.py sdist; cp dist/*.tar.gz /workspace/train.tar.gz']
+  id:   'PackageTrainingCode'
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', '/workspace/train.tar.gz', 'gs://$REPO_NAME/$COMMIT_SHA/train/train.tar.gz']
+  id:   'UploadTrainingCode'
+  waitFor: ['PackageTrainingCode']
+- name: 'python:3.6-slim'
+  entrypoint: '/bin/sh'
+  args: ['-c', 'cd ${_CODE_PATH}; pip3 install https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz && python resnet-train-pipeline.py --package_base_dir gs://$REPO_NAME/$COMMIT_SHA && cp resnet-train-pipeline.py.zip /workspace/resnet-train-pipeline.zip']
+  id:   'PackagePipeline'
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', '/workspace/resnet-train-pipeline.zip', 'gs://$REPO_NAME/$COMMIT_SHA/resnet-train-pipeline.zip']
+  id:   'UploadPipeline'
+  waitFor: ['PackagePipeline']
+
+substitutions:
+  _CODE_PATH: /workspace/experiment/ci/resnet-cmle
