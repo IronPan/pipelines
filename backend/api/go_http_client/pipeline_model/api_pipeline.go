@@ -35,7 +35,8 @@ type APIPipeline struct {
 	// Format: date-time
 	CreatedAt strfmt.DateTime `json:"created_at,omitempty"`
 
-	// The default version of the pipeline. Always not empty.
+	// Output only. The default version of the pipeline.
+	// Read Only: true
 	DefaultVersion *APIVersion `json:"default_version,omitempty"`
 
 	// Optional input field. Describing the purpose of the job.
@@ -52,6 +53,11 @@ type APIPipeline struct {
 	// Optional input field. Pipeline name provided by user. If not specified,
 	// file name is used as pipeline name.
 	Name string `json:"name,omitempty"`
+
+	// Input. This is only for backward compatibility purpose and will be removed
+	// in the future.
+	// User can create a new Pipeline with a new Version by specifying the URL.
+	URL *APIURL `json:"url,omitempty"`
 }
 
 // Validate validates this api pipeline
@@ -63,6 +69,10 @@ func (m *APIPipeline) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDefaultVersion(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateURL(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -95,6 +105,24 @@ func (m *APIPipeline) validateDefaultVersion(formats strfmt.Registry) error {
 		if err := m.DefaultVersion.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("default_version")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *APIPipeline) validateURL(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.URL) { // not required
+		return nil
+	}
+
+	if m.URL != nil {
+		if err := m.URL.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("url")
 			}
 			return err
 		}
