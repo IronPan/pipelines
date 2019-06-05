@@ -118,72 +118,85 @@ func (r *ResourceManager) GetPipeline(pipelineId string) (*model.Pipeline, error
 }
 
 func (r *ResourceManager) DeletePipeline(pipelineId string) error {
-	_, err := r.pipelineStore.GetPipeline(pipelineId)
-	if err != nil {
-		return util.Wrap(err, "Delete pipeline failed")
-	}
-
-	// Mark pipeline as deleting so it's not visible to user.
-	err = r.pipelineStore.UpdatePipelineStatus(pipelineId, model.PipelineDeleting)
-	if err != nil {
-		return util.Wrap(err, "Delete pipeline failed")
-	}
-
-	// Delete pipeline file and DB entry.
-	// Not fail the request if this step failed. A background run will do the cleanup.
-	// https://github.com/kubeflow/pipelines/issues/388
-	err = r.objectStore.DeleteFile(storage.CreatePipelinePath(fmt.Sprint(pipelineId)))
-	if err != nil {
-		glog.Errorf("%v", errors.Wrapf(err, "Failed to delete pipeline file for pipeline %v", pipelineId))
-		return nil
-	}
-	err = r.pipelineStore.DeletePipeline(pipelineId)
+	err := r.pipelineStore.DeletePipeline(pipelineId)
 	if err != nil {
 		glog.Errorf("%v", errors.Wrapf(err, "Failed to delete pipeline DB entry for pipeline %v", pipelineId))
 	}
 	return nil
 }
 
-func (r *ResourceManager) CreatePipeline(name string, description string, pipelineFile []byte) (*model.Pipeline, error) {
-	// Extract the parameter from the pipeline
-	params, err := util.GetParameters(pipelineFile)
-	if err != nil {
-		return nil, util.Wrap(err, "Create pipeline failed")
-	}
-
+func(r *ResourceManager)  CreatePipeline2(name string, description string) (*model.Pipeline, error){
 	// Create an entry with status of creating the pipeline
-	pipeline := &model.Pipeline{Name: name, Description: description, Parameters: params, Status: model.PipelineCreating}
+	// TODO for now always set status to ready. In future, we might not need pipeline status
+	pipeline := &model.Pipeline{Name: name, Description: description, Status:model.PipelineReady}
 	newPipeline, err := r.pipelineStore.CreatePipeline(pipeline)
-	if err != nil {
-		return nil, util.Wrap(err, "Create pipeline failed")
-	}
-
-	// Store the pipeline file
-	err = r.objectStore.AddFile(pipelineFile, storage.CreatePipelinePath(fmt.Sprint(newPipeline.UUID)))
-	if err != nil {
-		return nil, util.Wrap(err, "Create pipeline failed")
-	}
-
-	newPipeline.Status = model.PipelineReady
-	err = r.pipelineStore.UpdatePipelineStatus(newPipeline.UUID, newPipeline.Status)
 	if err != nil {
 		return nil, util.Wrap(err, "Create pipeline failed")
 	}
 	return newPipeline, nil
 }
 
-func (r *ResourceManager) UpdatePipelineStatus(pipelineId string, status model.PipelineStatus) error {
-	return r.pipelineStore.UpdatePipelineStatus(pipelineId, status)
+func (r *ResourceManager) CreatePipelineVersion(apiVersion *api.PipelineVersion, pipelineId string, pipelineFile []byte) (*model.PipelineVersion, error) {
+	version := ToModelPipelineVersion(apiVersion)
+	// Extract the parameter from the pipeline
+	params, err := util.GetParameters(pipelineFile)
+	if err != nil {
+		return nil, util.Wrap(err, "Create pipeline version failed")
+	}
+
+	// Create an entry with status of creating the pipeline version
+	version.Status = model.PipelineVersionCreating
+	version.PipelineId = pipelineId
+	version.Parameters = params
+	newPipelineVersion, err := r.pipelineStore.CreatePipelineVersion(version)
+	if err != nil {
+		return nil, util.Wrap(err, "Create pipeline version failed")
+	}
+
+	// Store the pipeline file
+	err = r.objectStore.AddFile(pipelineFile, storage.CreatePipelinePath(fmt.Sprint(newPipelineVersion.UUID)))
+	if err != nil {
+		return nil, util.Wrap(err, "Create pipeline version failed")
+	}
+
+	newPipelineVersion.Status = model.PipelineVersionReady
+	err = r.pipelineStore.UpdatePipelineVersionStatus(newPipelineVersion.UUID, newPipelineVersion.Status)
+	if err != nil {
+		return nil, util.Wrap(err, "Create pipeline failed")
+	}
+	return newPipelineVersion, nil
+}
+
+func (r *ResourceManager) GetPipelineVersion(pipelineId string, versionId string)(*model.PipelineVersion, error){
+	return r.pipelineStore.GetPipelineVersion(pipelineId, versionId)
+}
+
+func (r *ResourceManager) ListPipelineVersions(pipelineId string) (pipelines []*model.PipelineVersion, err error) {
+	return r.pipelineStore.ListPipelineVersions(pipelineId)
+}
+
+// TODO remove
+func (r *ResourceManager) CreatePipeline(name string, description string, pipelineFile []byte) (*model.Pipeline, error) {
+	return r.CreatePipeline2(name, description)
 }
 
 func (r *ResourceManager) GetPipelineTemplate(pipelineId string) ([]byte, error) {
 	// Verify pipeline exist
-	_, err := r.pipelineStore.GetPipeline(pipelineId)
+	pipeline, err := r.pipelineStore.GetPipeline(pipelineId)
 	if err != nil {
 		return nil, util.Wrap(err, "Get pipeline template failed")
 	}
 
-	template, err := r.objectStore.GetFile(storage.CreatePipelinePath(fmt.Sprint(pipelineId)))
+	template, err := r.objectStore.GetFile(storage.CreatePipelinePath(fmt.Sprint(pipeline.DefaultVersion)))
+	if err != nil {
+		return nil, util.Wrap(err, "Get pipeline template failed")
+	}
+
+	return template, nil
+}
+
+func (r *ResourceManager) GetPipelineVersionTemplate(versionId string) ([]byte, error) {
+	template, err := r.objectStore.GetFile(storage.CreatePipelinePath(fmt.Sprint(versionId)))
 	if err != nil {
 		return nil, util.Wrap(err, "Get pipeline template failed")
 	}

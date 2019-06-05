@@ -29,13 +29,13 @@ func TestToApiPipeline(t *testing.T) {
 	modelPipeline := &model.Pipeline{
 		UUID:           "pipeline1",
 		CreatedAtInSec: 1,
-		Parameters:     "[]",
+		DefaultVersion: &model.PipelineVersion{},
 	}
 	apiPipeline := ToApiPipeline(modelPipeline)
 	expectedApiPipeline := &api.Pipeline{
-		Id:         "pipeline1",
-		CreatedAt:  &timestamp.Timestamp{Seconds: 1},
-		Parameters: []*api.Parameter{},
+		Id:             "pipeline1",
+		CreatedAt:      &timestamp.Timestamp{Seconds: 1},
+		DefaultVersion: &api.PipelineVersion{CreatedAt: &timestamp.Timestamp{}, CodeSource: &api.CodeSource{}},
 	}
 	assert.Equal(t, expectedApiPipeline, apiPipeline)
 }
@@ -44,7 +44,7 @@ func TestToApiPipeline_ErrorParsingField(t *testing.T) {
 	modelPipeline := &model.Pipeline{
 		UUID:           "pipeline1",
 		CreatedAtInSec: 1,
-		Parameters:     "[invalid parameter",
+		DefaultVersion: &model.PipelineVersion{},
 	}
 	apiPipeline := ToApiPipeline(modelPipeline)
 	expectedApiPipeline := &api.Pipeline{

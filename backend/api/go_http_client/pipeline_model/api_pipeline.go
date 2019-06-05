@@ -37,7 +37,7 @@ type APIPipeline struct {
 
 	// Output only. The default version of the pipeline.
 	// Read Only: true
-	DefaultVersion *APIVersion `json:"default_version,omitempty"`
+	DefaultVersion *APIPipelineVersion `json:"default_version,omitempty"`
 
 	// Optional input field. Describing the purpose of the job.
 	Description string `json:"description,omitempty"`

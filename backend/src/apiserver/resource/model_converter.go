@@ -96,6 +96,14 @@ func ToModelJob(job *api.Job, swf *util.ScheduledWorkflow, workflowSpecManifest 
 	}, nil
 }
 
+func ToModelPipelineVersion(version *api.PipelineVersion) *model.PipelineVersion {
+	return &model.PipelineVersion{
+		UUID:       string(version.Id),
+		Name:       version.Name,
+		CodeSource: model.CodeSource{RepoName: version.CodeSource.RepoName, CommitSHA: version.CodeSource.CommitSha},
+	}
+}
+
 func toModelTrigger(trigger *api.Trigger) model.Trigger {
 	modelTrigger := model.Trigger{}
 	if trigger == nil {
@@ -146,7 +154,7 @@ func toModelParameters(apiParams []*api.Parameter) (string, error) {
 }
 
 func toModelResourceReferences(
-	resourceId string, resourceType common.ResourceType, apiRefs []*api.ResourceReference) ([]*model.ResourceReference, error) {
+		resourceId string, resourceType common.ResourceType, apiRefs []*api.ResourceReference) ([]*model.ResourceReference, error) {
 	var modelRefs []*model.ResourceReference
 	for _, apiRef := range apiRefs {
 		modelReferenceType, err := common.ToModelResourceType(apiRef.Key.Type)

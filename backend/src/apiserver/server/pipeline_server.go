@@ -32,16 +32,12 @@ type PipelineServer struct {
 	httpClient      *http.Client
 }
 
-func (s *PipelineServer) CreatePipeline(ctx context.Context, request *api.CreatePipelineRequest) (*api.Pipeline, error) {
-	if err := ValidateCreatePipelineRequest(request); err != nil {
-		return nil, err
-	}
-
-	pipelineUrl := request.Pipeline.Url.PipelineUrl
+func (s *PipelineServer) CreatePipelineVersion(ctx context.Context, request *api.CreatePipelineVersionRequest) (*api.PipelineVersion, error) {
+	pipelineUrl := request.Version.Url.PipelineUrl
 	resp, err := s.httpClient.Get(pipelineUrl)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		return nil, util.NewInternalServerError(err, "Failed to download the pipeline from %v "+
-			"Please double check the URL is valid and can be accessed by the pipeline system.", pipelineUrl)
+				"Please double check the URL is valid and can be accessed by the pipeline system.", pipelineUrl)
 	}
 	pipelineFileName := path.Base(pipelineUrl)
 	pipelineFile, err := ReadPipelineFile(pipelineFileName, resp.Body, MaxFileLength)
@@ -49,14 +45,72 @@ func (s *PipelineServer) CreatePipeline(ctx context.Context, request *api.Create
 		return nil, util.Wrap(err, "The URL is valid but pipeline system failed to read the file.")
 	}
 
-	pipelineName, err := GetPipelineName(request.Pipeline.Name, pipelineFileName)
+	version, err := s.resourceManager.CreatePipelineVersion(request.Version, request.PipelineId, pipelineFile)
 	if err != nil {
-		return nil, util.Wrap(err, "Invalid pipeline name.")
+		return nil, util.Wrap(err, "Failed to create a version.")
+	}
+	return ToApiVersion(version)
+}
+
+func (s *PipelineServer) GetPipelineVersion(ctx context.Context, request *api.GetPipelineVersionRequest) (*api.PipelineVersion, error) {
+	version, err := s.resourceManager.GetPipelineVersion(request.PipelineId, request.VersionId)
+	if err != nil {
+		return nil, util.Wrap(err, "Get pipeline version failed.")
+	}
+	return ToApiVersion(version)
+}
+
+func (s *PipelineServer) ListPipelineVersions(ctx context.Context, request *api.ListPipelineVersionsRequest) (*api.ListPipelineVersionsResponse, error) {
+	versions, err := s.resourceManager.ListPipelineVersions(request.PipelineId)
+
+	if err != nil {
+		return nil, util.Wrap(err, "Failed to list pipeline versions")
+	}
+	apiVersions, err := ToApiVersions(versions)
+	if err != nil {
+		return nil, util.Wrap(err, "Failed to list pipeline versions")
+	}
+	return &api.ListPipelineVersionsResponse{Versions: apiVersions}, nil
+}
+
+func (s *PipelineServer) GetPipelineVersionTemplate(ctx context.Context, request *api.GetPipelineVersionTemplateRequest) (*api.GetTemplateResponse, error) {
+	template, err := s.resourceManager.GetPipelineVersionTemplate(request.VersionId)
+	if err != nil {
+		return nil, util.Wrap(err, "Get pipeline version template failed.")
 	}
 
-	pipeline, err := s.resourceManager.CreatePipeline(pipelineName, "", pipelineFile)
+	return &api.GetTemplateResponse{Template: string(template)}, nil
+}
+
+func (s *PipelineServer) CreatePipeline(ctx context.Context, request *api.CreatePipelineRequest) (*api.Pipeline, error) {
+	pipeline, err := s.resourceManager.CreatePipeline2(request.Pipeline.Name, request.Pipeline.Description)
 	if err != nil {
 		return nil, util.Wrap(err, "Create pipeline failed.")
+	}
+
+	hasValidUrl, err := HasValidUrl(request)
+	if err != nil {
+		return nil, util.Wrap(err, "Create pipeline failed.")
+	}
+
+	if hasValidUrl {
+		pipelineUrl := request.Pipeline.Url.PipelineUrl
+		resp, err := s.httpClient.Get(pipelineUrl)
+		if err != nil || resp.StatusCode != http.StatusOK {
+			return nil, util.NewInternalServerError(err, "Failed to download the pipeline from %v "+
+					"Please double check the URL is valid and can be accessed by the pipeline system.", pipelineUrl)
+		}
+		pipelineFileName := path.Base(pipelineUrl)
+		pipelineFile, err := ReadPipelineFile(pipelineFileName, resp.Body, MaxFileLength)
+		if err != nil {
+			return nil, util.Wrap(err, "The URL is valid but pipeline system failed to read the file.")
+		}
+
+		version, err := s.resourceManager.CreatePipelineVersion(request.Pipeline.DefaultVersion, pipeline.UUID, pipelineFile)
+		if err != nil {
+			return nil, util.Wrap(err, "Failed to create a version.")
+		}
+		pipeline.DefaultVersion = version
 	}
 
 	return ToApiPipeline(pipeline), nil
@@ -103,16 +157,16 @@ func (s *PipelineServer) GetTemplate(ctx context.Context, request *api.GetTempla
 	return &api.GetTemplateResponse{Template: string(template)}, nil
 }
 
-func ValidateCreatePipelineRequest(request *api.CreatePipelineRequest) error {
+func HasValidUrl(request *api.CreatePipelineRequest) (bool, error) {
 	if request.Pipeline.Url == nil || request.Pipeline.Url.PipelineUrl == "" {
-		return util.NewInvalidInputError("Pipeline URL is empty. Please specify a valid URL.")
+		return false, nil
 	}
 
 	if _, err := url.ParseRequestURI(request.Pipeline.Url.PipelineUrl); err != nil {
-		return util.NewInvalidInputError(
+		return false, util.NewInvalidInputError(
 			"Invalid Pipeline URL %v. Please specify a valid URL", request.Pipeline.Url.PipelineUrl)
 	}
-	return nil
+	return true, nil
 }
 
 func NewPipelineServer(resourceManager *resource.ResourceManager) *PipelineServer {

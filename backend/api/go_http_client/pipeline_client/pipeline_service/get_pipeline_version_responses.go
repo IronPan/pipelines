@@ -30,24 +30,24 @@ import (
 	pipeline_model "github.com/kubeflow/pipelines/backend/api/go_http_client/pipeline_model"
 )
 
-// CreateVersionReader is a Reader for the CreateVersion structure.
-type CreateVersionReader struct {
+// GetPipelineVersionReader is a Reader for the GetPipelineVersion structure.
+type GetPipelineVersionReader struct {
 	formats strfmt.Registry
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *CreateVersionReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *GetPipelineVersionReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
 
 	case 200:
-		result := NewCreateVersionOK()
+		result := NewGetPipelineVersionOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
 
 	default:
-		result := NewCreateVersionDefault(response.Code())
+		result := NewGetPipelineVersionDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -58,26 +58,26 @@ func (o *CreateVersionReader) ReadResponse(response runtime.ClientResponse, cons
 	}
 }
 
-// NewCreateVersionOK creates a CreateVersionOK with default headers values
-func NewCreateVersionOK() *CreateVersionOK {
-	return &CreateVersionOK{}
+// NewGetPipelineVersionOK creates a GetPipelineVersionOK with default headers values
+func NewGetPipelineVersionOK() *GetPipelineVersionOK {
+	return &GetPipelineVersionOK{}
 }
 
-/*CreateVersionOK handles this case with default header values.
+/*GetPipelineVersionOK handles this case with default header values.
 
 A successful response.
 */
-type CreateVersionOK struct {
-	Payload *pipeline_model.APIVersion
+type GetPipelineVersionOK struct {
+	Payload *pipeline_model.APIPipelineVersion
 }
 
-func (o *CreateVersionOK) Error() string {
-	return fmt.Sprintf("[POST /apis/v1beta1/pipelines/{pipeline_id}/versions][%d] createVersionOK  %+v", 200, o.Payload)
+func (o *GetPipelineVersionOK) Error() string {
+	return fmt.Sprintf("[GET /apis/v1beta1/pipelines/{pipeline_id}/versions/{version_id}][%d] getPipelineVersionOK  %+v", 200, o.Payload)
 }
 
-func (o *CreateVersionOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *GetPipelineVersionOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(pipeline_model.APIVersion)
+	o.Payload = new(pipeline_model.APIPipelineVersion)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -87,33 +87,33 @@ func (o *CreateVersionOK) readResponse(response runtime.ClientResponse, consumer
 	return nil
 }
 
-// NewCreateVersionDefault creates a CreateVersionDefault with default headers values
-func NewCreateVersionDefault(code int) *CreateVersionDefault {
-	return &CreateVersionDefault{
+// NewGetPipelineVersionDefault creates a GetPipelineVersionDefault with default headers values
+func NewGetPipelineVersionDefault(code int) *GetPipelineVersionDefault {
+	return &GetPipelineVersionDefault{
 		_statusCode: code,
 	}
 }
 
-/*CreateVersionDefault handles this case with default header values.
+/*GetPipelineVersionDefault handles this case with default header values.
 
-CreateVersionDefault create version default
+GetPipelineVersionDefault get pipeline version default
 */
-type CreateVersionDefault struct {
+type GetPipelineVersionDefault struct {
 	_statusCode int
 
 	Payload *pipeline_model.APIStatus
 }
 
-// Code gets the status code for the create version default response
-func (o *CreateVersionDefault) Code() int {
+// Code gets the status code for the get pipeline version default response
+func (o *GetPipelineVersionDefault) Code() int {
 	return o._statusCode
 }
 
-func (o *CreateVersionDefault) Error() string {
-	return fmt.Sprintf("[POST /apis/v1beta1/pipelines/{pipeline_id}/versions][%d] CreateVersion default  %+v", o._statusCode, o.Payload)
+func (o *GetPipelineVersionDefault) Error() string {
+	return fmt.Sprintf("[GET /apis/v1beta1/pipelines/{pipeline_id}/versions/{version_id}][%d] GetPipelineVersion default  %+v", o._statusCode, o.Payload)
 }
 
-func (o *CreateVersionDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *GetPipelineVersionDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(pipeline_model.APIStatus)
 

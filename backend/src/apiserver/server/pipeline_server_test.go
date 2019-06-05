@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -37,10 +36,6 @@ func TestCreatePipeline_YAML(t *testing.T) {
 	newPipeline, err := resourceManager.GetPipeline(pipeline.Id)
 	assert.Nil(t, err)
 	assert.NotNil(t, newPipeline)
-	var params []api.Parameter
-	err = json.Unmarshal([]byte(newPipeline.Parameters), &params)
-	assert.Nil(t, err)
-	assert.Equal(t, []api.Parameter{{Name: "param1", Value: "hello"}, {Name: "param2"}}, params)
 }
 
 func TestCreatePipeline_Tarball(t *testing.T) {
@@ -64,10 +59,7 @@ func TestCreatePipeline_Tarball(t *testing.T) {
 	newPipeline, err := resourceManager.GetPipeline(pipeline.Id)
 	assert.Nil(t, err)
 	assert.NotNil(t, newPipeline)
-	var params []api.Parameter
-	err = json.Unmarshal([]byte(newPipeline.Parameters), &params)
 	assert.Nil(t, err)
-	assert.Equal(t, []api.Parameter{{Name: "param1", Value: "hello"}, {Name: "param2"}}, params)
 }
 
 func TestCreatePipeline_InvalidYAML(t *testing.T) {

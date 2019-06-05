@@ -68,23 +68,23 @@ func (a *Client) CreatePipeline(params *CreatePipelineParams, authInfo runtime.C
 }
 
 /*
-CreateVersion create version API
+CreatePipelineVersion create pipeline version API
 */
-func (a *Client) CreateVersion(params *CreateVersionParams, authInfo runtime.ClientAuthInfoWriter) (*CreateVersionOK, error) {
+func (a *Client) CreatePipelineVersion(params *CreatePipelineVersionParams, authInfo runtime.ClientAuthInfoWriter) (*CreatePipelineVersionOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewCreateVersionParams()
+		params = NewCreatePipelineVersionParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "CreateVersion",
+		ID:                 "CreatePipelineVersion",
 		Method:             "POST",
 		PathPattern:        "/apis/v1beta1/pipelines/{pipeline_id}/versions",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},
 		Params:             params,
-		Reader:             &CreateVersionReader{formats: a.formats},
+		Reader:             &CreatePipelineVersionReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -92,7 +92,7 @@ func (a *Client) CreateVersion(params *CreateVersionParams, authInfo runtime.Cli
 	if err != nil {
 		return nil, err
 	}
-	return result.(*CreateVersionOK), nil
+	return result.(*CreatePipelineVersionOK), nil
 
 }
 
@@ -155,6 +155,64 @@ func (a *Client) GetPipeline(params *GetPipelineParams, authInfo runtime.ClientA
 }
 
 /*
+GetPipelineVersion get pipeline version API
+*/
+func (a *Client) GetPipelineVersion(params *GetPipelineVersionParams, authInfo runtime.ClientAuthInfoWriter) (*GetPipelineVersionOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetPipelineVersionParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetPipelineVersion",
+		Method:             "GET",
+		PathPattern:        "/apis/v1beta1/pipelines/{pipeline_id}/versions/{version_id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetPipelineVersionReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetPipelineVersionOK), nil
+
+}
+
+/*
+GetPipelineVersionTemplate get pipeline version template API
+*/
+func (a *Client) GetPipelineVersionTemplate(params *GetPipelineVersionTemplateParams, authInfo runtime.ClientAuthInfoWriter) (*GetPipelineVersionTemplateOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetPipelineVersionTemplateParams()
+	}
+
+	result, err := a.transport.Submit(&runtime.ClientOperation{
+		ID:                 "GetPipelineVersionTemplate",
+		Method:             "GET",
+		PathPattern:        "/apis/v1beta1/pipelines/{pipeline_id}/versions/{version_id}/templates",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetPipelineVersionTemplateReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetPipelineVersionTemplateOK), nil
+
+}
+
+/*
 GetTemplate gets template will get the default template for a given pipeline
 */
 func (a *Client) GetTemplate(params *GetTemplateParams, authInfo runtime.ClientAuthInfoWriter) (*GetTemplateOK, error) {
@@ -184,23 +242,23 @@ func (a *Client) GetTemplate(params *GetTemplateParams, authInfo runtime.ClientA
 }
 
 /*
-GetVersion get version API
+ListPipelineVersions list pipeline versions API
 */
-func (a *Client) GetVersion(params *GetVersionParams, authInfo runtime.ClientAuthInfoWriter) (*GetVersionOK, error) {
+func (a *Client) ListPipelineVersions(params *ListPipelineVersionsParams, authInfo runtime.ClientAuthInfoWriter) (*ListPipelineVersionsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetVersionParams()
+		params = NewListPipelineVersionsParams()
 	}
 
 	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetVersion",
+		ID:                 "ListPipelineVersions",
 		Method:             "GET",
-		PathPattern:        "/apis/v1beta1/pipelines/{pipeline_id}/versions/{version_id}",
+		PathPattern:        "/apis/v1beta1/pipelines/{pipeline_id}/versions",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},
 		Params:             params,
-		Reader:             &GetVersionReader{formats: a.formats},
+		Reader:             &ListPipelineVersionsReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -208,36 +266,7 @@ func (a *Client) GetVersion(params *GetVersionParams, authInfo runtime.ClientAut
 	if err != nil {
 		return nil, err
 	}
-	return result.(*GetVersionOK), nil
-
-}
-
-/*
-GetVersionTemplate get version template API
-*/
-func (a *Client) GetVersionTemplate(params *GetVersionTemplateParams, authInfo runtime.ClientAuthInfoWriter) (*GetVersionTemplateOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetVersionTemplateParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "GetVersionTemplate",
-		Method:             "GET",
-		PathPattern:        "/apis/v1beta1/pipelines/{pipeline_id}/versions/{version_id}/templates",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http", "https"},
-		Params:             params,
-		Reader:             &GetVersionTemplateReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*GetVersionTemplateOK), nil
+	return result.(*ListPipelineVersionsOK), nil
 
 }
 
@@ -267,35 +296,6 @@ func (a *Client) ListPipelines(params *ListPipelinesParams, authInfo runtime.Cli
 		return nil, err
 	}
 	return result.(*ListPipelinesOK), nil
-
-}
-
-/*
-ListVersions list versions API
-*/
-func (a *Client) ListVersions(params *ListVersionsParams, authInfo runtime.ClientAuthInfoWriter) (*ListVersionsOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewListVersionsParams()
-	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
-		ID:                 "ListVersions",
-		Method:             "GET",
-		PathPattern:        "/apis/v1beta1/pipelines/{pipeline_id}/versions",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http", "https"},
-		Params:             params,
-		Reader:             &ListVersionsReader{formats: a.formats},
-		AuthInfo:           authInfo,
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result.(*ListVersionsOK), nil
 
 }
 

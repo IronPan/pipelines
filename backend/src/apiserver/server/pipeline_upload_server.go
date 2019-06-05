@@ -43,6 +43,7 @@ type PipelineUploadServer struct {
 // See https://github.com/grpc-ecosystem/grpc-gateway/issues/500
 // Thus we create the HTTP endpoint directly and using swagger to auto generate the HTTP client.
 func (s *PipelineUploadServer) UploadPipeline(w http.ResponseWriter, r *http.Request) {
+	// TODO create a pipeline and a version
 	glog.Infof("Upload pipeline called")
 	file, header, err := r.FormFile(FormFileKey)
 	if err != nil {

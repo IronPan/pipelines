@@ -32,6 +32,12 @@ type PipelineStoreInterface interface {
 	DeletePipeline(pipelineId string) error
 	CreatePipeline(*model.Pipeline) (*model.Pipeline, error)
 	UpdatePipelineStatus(string, model.PipelineStatus) error
+
+	CreatePipelineVersion(*model.PipelineVersion) (*model.PipelineVersion, error)
+	GetPipelineVersion(pipelineId string, versionId string) (*model.PipelineVersion, error)
+	// TODO paginating the list pipeline versions
+	ListPipelineVersions(pipelineId string) ([]*model.PipelineVersion, error)
+	UpdatePipelineVersionStatus(string, model.PipelineVersionStatus) error
 }
 
 type PipelineStore struct {
@@ -52,9 +58,10 @@ func (s *PipelineStore) ListPipelines(opts *list.Options) ([]*model.Pipeline, in
 	}
 
 	sqlBuilder := buildQuery(sq.Select("*"))
-
 	// SQL for row list
-	rowsSql, rowsArgs, err := opts.AddPaginationToSelect(sqlBuilder).ToSql()
+	rowsSql, rowsArgs, err := opts.AddPaginationToSelect(sqlBuilder).
+		LeftJoin("pipeline_versions on pipelines.DefaultVersionId=pipeline_versions.UUID").
+		ToSql()
 	if err != nil {
 		return errorF(err)
 	}
@@ -78,7 +85,7 @@ func (s *PipelineStore) ListPipelines(opts *list.Options) ([]*model.Pipeline, in
 		tx.Rollback()
 		return errorF(err)
 	}
-	pipelines, err := s.scanRows(rows)
+	pipelines, err := s.scanPipelineRows(rows)
 	if err != nil {
 		tx.Rollback()
 		return errorF(err)
@@ -111,13 +118,17 @@ func (s *PipelineStore) ListPipelines(opts *list.Options) ([]*model.Pipeline, in
 	return pipelines[:opts.PageSize], total_size, npt, err
 }
 
-func (s *PipelineStore) scanRows(rows *sql.Rows) ([]*model.Pipeline, error) {
+func (s *PipelineStore) scanPipelineRows(rows *sql.Rows) ([]*model.Pipeline, error) {
 	var pipelines []*model.Pipeline
 	for rows.Next() {
-		var uuid, name, parameters, description string
-		var createdAtInSec int64
+		var uuid, name, description, defaultVersionId, versionUuid, versionName, versionParameters,
+		versionPipelineId, versionRepoName, versionCommitSha string
+		var createdAtInSec, versionCreatedAtInSec int64
 		var status model.PipelineStatus
-		if err := rows.Scan(&uuid, &createdAtInSec, &name, &description, &parameters, &status); err != nil {
+		var versionStatus model.PipelineVersionStatus
+		if err := rows.Scan(&uuid, &createdAtInSec, &name, &description, &status, &defaultVersionId,
+			&versionUuid, &versionCreatedAtInSec, &versionName, &versionParameters, &versionPipelineId,
+			&versionRepoName, &versionCommitSha, &versionStatus); err != nil {
 			return nil, err
 		}
 		pipelines = append(pipelines, &model.Pipeline{
@@ -125,10 +136,43 @@ func (s *PipelineStore) scanRows(rows *sql.Rows) ([]*model.Pipeline, error) {
 			CreatedAtInSec: createdAtInSec,
 			Name:           name,
 			Description:    description,
-			Parameters:     parameters,
-			Status:         status})
+			Status:         status,
+			DefaultVersion: &model.PipelineVersion{
+				UUID:           versionUuid,
+				CreatedAtInSec: versionCreatedAtInSec,
+				Name:           versionName,
+				Parameters:     versionParameters,
+				PipelineId:     versionPipelineId,
+				CodeSource:     model.CodeSource{RepoName: versionRepoName, CommitSHA: versionCommitSha},
+				Status:         versionStatus,
+			}})
 	}
 	return pipelines, nil
+}
+
+func (s *PipelineStore) scanVersionRows(rows *sql.Rows) ([]*model.PipelineVersion, error) {
+	var versions []*model.PipelineVersion
+	for rows.Next() {
+		var uuid, name, parameters, pipelineId, repoName, commitSha string
+		var createdAtInSec int64
+		var status model.PipelineVersionStatus
+		if err := rows.Scan(&uuid, &createdAtInSec, &name, &parameters, &pipelineId, &repoName,
+			&commitSha, &status); err != nil {
+			return nil, err
+		}
+		versions = append(versions, &model.PipelineVersion{
+			UUID:           uuid,
+			CreatedAtInSec: createdAtInSec,
+			Name:           name,
+			Parameters:     parameters,
+			PipelineId:     pipelineId,
+			CodeSource: model.CodeSource{
+				RepoName:  repoName,
+				CommitSHA: commitSha,
+			},
+			Status: status})
+	}
+	return versions, nil
 }
 
 func (s *PipelineStore) GetPipeline(id string) (*model.Pipeline, error) {
@@ -141,7 +185,9 @@ func (s *PipelineStore) GetPipelineWithStatus(id string, status model.PipelineSt
 		From("pipelines").
 		Where(sq.Eq{"uuid": id}).
 		Where(sq.Eq{"status": status}).
-		Limit(1).ToSql()
+		Limit(1).
+		LeftJoin("pipeline_versions on pipelines.DefaultVersionId=pipeline_versions.UUID").
+		ToSql()
 	if err != nil {
 		return nil, util.NewInternalServerError(err, "Failed to create query to get pipeline: %v", err.Error())
 	}
@@ -150,7 +196,7 @@ func (s *PipelineStore) GetPipelineWithStatus(id string, status model.PipelineSt
 		return nil, util.NewInternalServerError(err, "Failed to get pipeline: %v", err.Error())
 	}
 	defer r.Close()
-	pipelines, err := s.scanRows(r)
+	pipelines, err := s.scanPipelineRows(r)
 
 	if err != nil || len(pipelines) > 1 {
 		return nil, util.NewInternalServerError(err, "Failed to get pipeline: %v", err.Error())
@@ -162,6 +208,7 @@ func (s *PipelineStore) GetPipelineWithStatus(id string, status model.PipelineSt
 }
 
 func (s *PipelineStore) DeletePipeline(id string) error {
+	// TODO cascade delete the versions.
 	sql, args, err := sq.Delete("pipelines").Where(sq.Eq{"UUID": id}).ToSql()
 	if err != nil {
 		return util.NewInternalServerError(err, "Failed to create query to delete pipeline: %v", err.Error())
@@ -186,13 +233,12 @@ func (s *PipelineStore) CreatePipeline(p *model.Pipeline) (*model.Pipeline, erro
 	sql, args, err := sq.
 		Insert("pipelines").
 		SetMap(
-			sq.Eq{
-				"UUID":           newPipeline.UUID,
-				"CreatedAtInSec": newPipeline.CreatedAtInSec,
-				"Name":           newPipeline.Name,
-				"Description":    newPipeline.Description,
-				"Parameters":     newPipeline.Parameters,
-				"Status":         string(newPipeline.Status)}).
+		sq.Eq{
+			"UUID":           newPipeline.UUID,
+			"CreatedAtInSec": newPipeline.CreatedAtInSec,
+			"Name":           newPipeline.Name,
+			"Description":    newPipeline.Description,
+			"Status":         string(newPipeline.Status)}).
 		ToSql()
 	if err != nil {
 		return nil, util.NewInternalServerError(err, "Failed to create query to insert pipeline to pipeline table: %v",
@@ -222,6 +268,113 @@ func (s *PipelineStore) UpdatePipelineStatus(id string, status model.PipelineSta
 	_, err = s.db.Exec(sql, args...)
 	if err != nil {
 		return util.NewInternalServerError(err, "Failed to update the pipeline metadata: %s", err.Error())
+	}
+	return nil
+}
+
+func (s *PipelineStore) CreatePipelineVersion(v *model.PipelineVersion) (*model.PipelineVersion, error) {
+	newPipelineVersion := *v
+	newPipelineVersion.CreatedAtInSec = s.time.Now().Unix()
+	id, err := s.uuid.NewRandom()
+	if err != nil {
+		return nil, util.NewInternalServerError(err, "Failed to create a pipeline version id.")
+	}
+	newPipelineVersion.UUID = id.String()
+	sql, args, err := sq.
+		Insert("pipeline_versions").
+		SetMap(
+		sq.Eq{
+			"UUID":           newPipelineVersion.UUID,
+			"CreatedAtInSec": newPipelineVersion.CreatedAtInSec,
+			"Name":           newPipelineVersion.Name,
+			"Parameters":     newPipelineVersion.Parameters,
+			"PipelineId":     newPipelineVersion.PipelineId,
+			"RepoName":       newPipelineVersion.CodeSource.RepoName,
+			"CommitSHA":      newPipelineVersion.CodeSource.CommitSHA,
+			"Status":         string(newPipelineVersion.Status)}).
+		ToSql()
+	if err != nil {
+		return nil, util.NewInternalServerError(err, "Failed to create query to insert version to pipeline version table: %v",
+			err.Error())
+	}
+	_, err = s.db.Exec(sql, args...)
+	if err != nil {
+		if s.db.IsDuplicateError(err) {
+			return nil, util.NewInvalidInputError(
+				"Failed to create a new pipeline version. The name %v already exist. Please specify a new name.", v.Name)
+		}
+		return nil, util.NewInternalServerError(err, "Failed to add version to pipeline version table: %v",
+			err.Error())
+	}
+	return &newPipelineVersion, nil
+}
+
+func (s *PipelineStore) GetPipelineVersion(pipelineId string, versionId string) (*model.PipelineVersion, error) {
+	return s.GetPipelineVersionWithStatus(pipelineId, versionId, model.PipelineVersionReady)
+}
+
+func (s *PipelineStore) GetPipelineVersionWithStatus(pipelineId string, versionId string, status model.PipelineVersionStatus) (*model.PipelineVersion, error) {
+	sql, args, err := sq.
+		Select("*").
+		From("pipeline_versions").
+		Where(sq.Eq{"uuid": versionId}).
+		Where(sq.Eq{"pipelineid": pipelineId}).
+		Where(sq.Eq{"status": status}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return nil, util.NewInternalServerError(err, "Failed to create query to get pipeline version: %v", err.Error())
+	}
+	r, err := s.db.Query(sql, args...)
+	if err != nil {
+		return nil, util.NewInternalServerError(err, "Failed to get pipeline version: %v", err.Error())
+	}
+	defer r.Close()
+	versions, err := s.scanVersionRows(r)
+
+	if err != nil || len(versions) > 1 {
+		return nil, util.NewInternalServerError(err, "Failed to get pipeline version: %v", err.Error())
+	}
+	if len(versions) == 0 {
+		return nil, util.NewResourceNotFoundError("Version", fmt.Sprint(versionId))
+	}
+	return versions[0], nil
+}
+
+func (s *PipelineStore) ListPipelineVersions(pipelineId string) ([]*model.PipelineVersion, error) {
+	sql, args, err := sq.
+		Select("*").
+		From("pipeline_versions").
+		Where(sq.Eq{"pipelineid": pipelineId}).
+		Where(sq.Eq{"status": model.PipelineVersionReady}).
+		ToSql()
+	if err != nil {
+		return nil, util.NewInternalServerError(err, "Failed to create query to list pipeline version: %v", err.Error())
+	}
+	r, err := s.db.Query(sql, args...)
+	if err != nil {
+		return nil, util.NewInternalServerError(err, "Failed to list pipeline version: %v", err.Error())
+	}
+	defer r.Close()
+	versions, err := s.scanVersionRows(r)
+	if err != nil {
+		return nil, util.NewInternalServerError(err, "Failed to list pipeline version: %v", err.Error())
+	}
+	return versions, nil
+}
+
+func (s *PipelineStore) UpdatePipelineVersionStatus(id string, status model.PipelineVersionStatus) error {
+	sql, args, err := sq.
+		Update("pipeline_versions").
+		SetMap(sq.Eq{"Status": status}).
+		Where(sq.Eq{"UUID": id}).
+		ToSql()
+	if err != nil {
+		return util.NewInternalServerError(err, "Failed to create query to update the pipeline version metadata: %s", err.Error())
+	}
+	_, err = s.db.Exec(sql, args...)
+	if err != nil {
+		return util.NewInternalServerError(err, "Failed to update the pipeline version metadata: %s", err.Error())
 	}
 	return nil
 }

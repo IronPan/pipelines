@@ -68,7 +68,6 @@ func TestUploadPipeline_YAML(t *testing.T) {
 			UUID:           resource.DefaultFakeUUID,
 			CreatedAtInSec: 1,
 			Name:           "hello-world.yaml",
-			Parameters:     "[]",
 			Status:         model.PipelineReady}}
 	pkg, total_size, str, err := clientManager.PipelineStore().ListPipelines(opts)
 	assert.Nil(t, err)
@@ -110,7 +109,6 @@ func TestUploadPipeline_Tarball(t *testing.T) {
 			UUID:           resource.DefaultFakeUUID,
 			CreatedAtInSec: 1,
 			Name:           "arguments.tar.gz",
-			Parameters:     "[{\"name\":\"param1\",\"value\":\"hello\"},{\"name\":\"param2\"}]",
 			Status:         model.PipelineReady}}
 	pkg, total_size, str, err := clientManager.PipelineStore().ListPipelines(opts)
 	assert.Nil(t, err)
@@ -169,7 +167,6 @@ func TestUploadPipeline_SpecifyFileName(t *testing.T) {
 			UUID:           resource.DefaultFakeUUID,
 			CreatedAtInSec: 1,
 			Name:           "foo bar",
-			Parameters:     "[]",
 			Status:         model.PipelineReady}}
 	pkg, total_size, str, err := clientManager.PipelineStore().ListPipelines(opts)
 	assert.Nil(t, err)

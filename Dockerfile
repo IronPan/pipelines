@@ -51,7 +51,7 @@ COPY third_party/license.txt /bin/license.txt
 COPY --from=builder /go/src/github.com/kubeflow/pipelines/bazel-bin/backend/src/apiserver/linux_amd64_stripped/apiserver  /bin/apiserver
 COPY backend/src/apiserver/config/ /config
 
-COPY --from=compiler /samples/ /samples/
+COPY --from=compiler /samples /samples/
 
 # Adding CA certificate so API server can download pipeline through URL
 RUN apt-get update && apt-get install -y ca-certificates

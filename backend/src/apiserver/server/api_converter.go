@@ -50,20 +50,48 @@ func ToModelExperiment(experiment *api.Experiment) *model.Experiment {
 }
 
 func ToApiPipeline(pipeline *model.Pipeline) *api.Pipeline {
-	params, err := toApiParameters(pipeline.Parameters)
+	defaultVersion, err := ToApiVersion(pipeline.DefaultVersion)
 	if err != nil {
 		return &api.Pipeline{
 			Id:    pipeline.UUID,
 			Error: err.Error(),
 		}
 	}
+
 	return &api.Pipeline{
-		Id:          pipeline.UUID,
-		CreatedAt:   &timestamp.Timestamp{Seconds: pipeline.CreatedAtInSec},
-		Name:        pipeline.Name,
-		Description: pipeline.Description,
-		Parameters:  params,
+		Id:             pipeline.UUID,
+		CreatedAt:      &timestamp.Timestamp{Seconds: pipeline.CreatedAtInSec},
+		Name:           pipeline.Name,
+		Description:    pipeline.Description,
+		DefaultVersion: defaultVersion,
 	}
+}
+
+func ToApiVersion(version *model.PipelineVersion) (*api.PipelineVersion, error) {
+	params, err := toApiParameters(version.Parameters)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.PipelineVersion{
+		Id:         version.UUID,
+		Name:       version.Name,
+		CreatedAt:  &timestamp.Timestamp{Seconds: version.CreatedAtInSec},
+		Parameters: params,
+		CodeSource: &api.CodeSource{
+			RepoName:  version.CodeSource.RepoName,
+			CommitSha: version.CodeSource.CommitSHA,
+		},
+	}, nil
+}
+
+func ToApiVersions(versions []*model.PipelineVersion) ([]*api.PipelineVersion, error) {
+	apiVersions := make([]*api.PipelineVersion, 0)
+	for _, version := range versions {
+		v, _ := ToApiVersion(version)
+		apiVersions = append(apiVersions, v)
+	}
+	return apiVersions, nil
 }
 
 func ToApiPipelines(pipelines []*model.Pipeline) []*api.Pipeline {

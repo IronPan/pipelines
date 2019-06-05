@@ -28,16 +28,16 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// APIListVersionsResponse api list versions response
-// swagger:model apiListVersionsResponse
-type APIListVersionsResponse struct {
+// APIListPipelineVersionsResponse api list pipeline versions response
+// swagger:model apiListPipelineVersionsResponse
+type APIListPipelineVersionsResponse struct {
 
 	// versions
-	Versions []*APIVersion `json:"versions"`
+	Versions []*APIPipelineVersion `json:"versions"`
 }
 
-// Validate validates this api list versions response
-func (m *APIListVersionsResponse) Validate(formats strfmt.Registry) error {
+// Validate validates this api list pipeline versions response
+func (m *APIListPipelineVersionsResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateVersions(formats); err != nil {
@@ -50,7 +50,7 @@ func (m *APIListVersionsResponse) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *APIListVersionsResponse) validateVersions(formats strfmt.Registry) error {
+func (m *APIListPipelineVersionsResponse) validateVersions(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Versions) { // not required
 		return nil
@@ -76,7 +76,7 @@ func (m *APIListVersionsResponse) validateVersions(formats strfmt.Registry) erro
 }
 
 // MarshalBinary interface implementation
-func (m *APIListVersionsResponse) MarshalBinary() ([]byte, error) {
+func (m *APIListPipelineVersionsResponse) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -84,8 +84,8 @@ func (m *APIListVersionsResponse) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *APIListVersionsResponse) UnmarshalBinary(b []byte) error {
-	var res APIListVersionsResponse
+func (m *APIListPipelineVersionsResponse) UnmarshalBinary(b []byte) error {
+	var res APIListPipelineVersionsResponse
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
