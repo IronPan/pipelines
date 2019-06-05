@@ -25,9 +25,9 @@ The pipeline consists of two steps
 - [x] connect github to cloud build
 - [x] cloud build step to package code
 - [x] cloud build step to compile package
-- [ ] cloud build step to upload package to KFP endpoint
+- [x] cloud build step to upload package to KFP endpoint
 
-- [ ] add pipeline version API to KFP backend
+- [x] add pipeline version API to KFP backend
 - [ ] add pipeline version view to KFP UI
 
 - [ ] add hello world CI sample to build docker image
