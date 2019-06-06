@@ -54,6 +54,7 @@ class Client(object):
     self._host = host
     config = self._load_config(host, client_id, namespace)
     api_client = kfp_server_api.api_client.ApiClient(config)
+    self._pipeline_api = kfp_server_api.api.pipeline_service_api.PipelineServiceApi(api_client)
     self._run_api = kfp_server_api.api.run_service_api.RunServiceApi(api_client)
     self._experiment_api = kfp_server_api.api.experiment_service_api.ExperimentServiceApi(api_client)
 
@@ -120,6 +121,17 @@ class Client(object):
 
     # In-cluster pod. We could use relative URL.
     return '/pipeline'
+
+  def create_pipeline_version(self, pipeline_id, name, url):
+    """Create a new pipeline version.
+    Args:
+      name: the name of the pipeline.
+    Returns:
+      A pipeline object. Most important field is id.
+    """
+    pipeline_version = kfp_server_api.models.ApiPipelineVersion(name=name,url={'pipeline_url':url})
+    pipeline_version = self._pipeline_api.create_pipeline_version(pipeline_id=pipeline_id,body=pipeline_version)
+    return pipeline_version
 
   def create_experiment(self, name):
     """Create a new experiment.
