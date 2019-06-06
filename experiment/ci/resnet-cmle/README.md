@@ -33,4 +33,4 @@ The pipeline consists of two steps
 - [ ] add hello world CI sample to build docker image
 - [ ] add TFX sample
 
-- [ ] local run/testing
+- [x] local run/testing
