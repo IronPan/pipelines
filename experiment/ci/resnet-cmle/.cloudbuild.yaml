@@ -1,4 +1,9 @@
 steps:
+- name: gcr.io/cloud-builders/kubectl
+  args: ['get', 'po', '--all-namespaces']
+  env:
+  - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
 - name: gcr.io/cloud-builders/gsutil
   # TODO relative path to local file?
   args: ['cp', '-r', '${_CODE_PATH}/preprocess', 'gs://$REPO_NAME/$COMMIT_SHA/preprocess']
