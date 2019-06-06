@@ -1,10 +1,4 @@
 steps:
-- name: gcr.io/cloud-builders/kubectl
-  entrypoint: python
-  args: ['--version']
-  env:
-  - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
 - name: gcr.io/cloud-builders/gsutil
   # TODO relative path to local file?
   args: ['cp', '-r', '${_CODE_PATH}/preprocess', 'gs://$REPO_NAME/$COMMIT_SHA/preprocess']
@@ -21,6 +15,14 @@ steps:
   entrypoint: '/bin/sh'
   args: ['-c', 'cd ${_CODE_PATH}; pip3 install https://storage.googleapis.com/ml-pipeline/release/0.1.20/kfp.tar.gz && python resnet-train-pipeline.py --package_base_dir gs://$REPO_NAME/$COMMIT_SHA && cp resnet-train-pipeline.py.zip /workspace/resnet-train-pipeline.zip']
   id:   'PackagePipeline'
+#- name: gcr.io/cloud-builders/kubectl
+#  entrypoint: '/bin/sh'
+#  args: ['-c', 'python resnet-train-pipeline.py --package_base_dir gs://$REPO_NAME/$COMMIT_SHA && cp resnet-train-pipeline.py.zip /workspace/resnet-train-pipeline.zip']
+#  args: ['--version']
+#  env:
+#  - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
+#  - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
+
 - name: 'gcr.io/cloud-builders/gsutil'
   args: ['cp', '/workspace/resnet-train-pipeline.zip', 'gs://$REPO_NAME/$COMMIT_SHA/resnet-train-pipeline.zip']
   id:   'UploadPipeline'
