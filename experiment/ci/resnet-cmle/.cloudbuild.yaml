@@ -1,6 +1,7 @@
 steps:
 - name: gcr.io/cloud-builders/kubectl
-  args: ['get', 'po', '--all-namespaces']
+  entrypoint: python
+  args: ['--version']
   env:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
