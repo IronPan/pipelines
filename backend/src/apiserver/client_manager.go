@@ -197,6 +197,7 @@ func initDBClient(initConnectionTimeout time.Duration) *storage.DB {
 		&model.Experiment{},
 		&model.Job{},
 		&model.Pipeline{},
+		&model.PipelineVersion{},
 		&model.ResourceReference{},
 		&model.RunDetail{},
 		&model.RunMetric{},

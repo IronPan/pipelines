@@ -11,14 +11,14 @@ const (
 )
 
 type PipelineVersion struct {
-	UUID           string `gorm:"column:UUID; not null; primary_key"`
-	CreatedAtInSec int64  `gorm:"column:CreatedAtInSec; not null"`
-	Name           string `gorm:"column:Name; not null; unique"`
+	UUID           string `gorm:"column:VersionUUID; not null; primary_key"`
+	CreatedAtInSec int64  `gorm:"column:VersionCreatedAtInSec; not null"`
+	Name           string `gorm:"column:VersionName; not null; unique"`
 	/* Set size to 65535 so it will be stored as longtext. https://dev.mysql.com/doc/refman/8.0/en/column-count-limit.html */
-	Parameters string                `gorm:"column:Parameters; not null; size:65535"`
+	Parameters string                `gorm:"column:VersionParameters; not null; size:65535"`
 	PipelineId string                `gorm:"column:PipelineId; not null"`
-	CodeSource CodeSource
-	Status     PipelineVersionStatus `gorm:"column:Status; not null"`
+	Status     PipelineVersionStatus `gorm:"column:VersionStatus; not null"`
+	CodeSource
 }
 
 type CodeSource struct {

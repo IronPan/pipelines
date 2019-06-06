@@ -54,13 +54,13 @@ func (s *PipelineStore) ListPipelines(opts *list.Options) ([]*model.Pipeline, in
 	}
 
 	buildQuery := func(sqlBuilder sq.SelectBuilder) sq.SelectBuilder {
-		return sqlBuilder.From("pipelines").Where(sq.Eq{"Status": model.PipelineReady})
+		return sqlBuilder.From("pipelines").Where(sq.Eq{"pipelines.Status": model.PipelineReady})
 	}
 
 	sqlBuilder := buildQuery(sq.Select("*"))
 	// SQL for row list
 	rowsSql, rowsArgs, err := opts.AddPaginationToSelect(sqlBuilder).
-		LeftJoin("pipeline_versions on pipelines.DefaultVersionId=pipeline_versions.UUID").
+		LeftJoin("pipeline_versions on pipelines.DefaultVersionId=pipeline_versions.VersionUUID").
 		ToSql()
 	if err != nil {
 		return errorF(err)
@@ -121,14 +121,16 @@ func (s *PipelineStore) ListPipelines(opts *list.Options) ([]*model.Pipeline, in
 func (s *PipelineStore) scanPipelineRows(rows *sql.Rows) ([]*model.Pipeline, error) {
 	var pipelines []*model.Pipeline
 	for rows.Next() {
-		var uuid, name, description, defaultVersionId, versionUuid, versionName, versionParameters,
-		versionPipelineId, versionRepoName, versionCommitSha string
-		var createdAtInSec, versionCreatedAtInSec int64
+		var uuid, name, description, defaultVersionId  string
+		var versionUuid, versionName, versionParameters,
+		versionPipelineId, versionRepoName, versionCommitSha sql.NullString
+		var createdAtInSec int64
+		var versionCreatedAtInSec sql.NullInt64
 		var status model.PipelineStatus
-		var versionStatus model.PipelineVersionStatus
+		var versionStatus sql.NullString
 		if err := rows.Scan(&uuid, &createdAtInSec, &name, &description, &status, &defaultVersionId,
 			&versionUuid, &versionCreatedAtInSec, &versionName, &versionParameters, &versionPipelineId,
-			&versionRepoName, &versionCommitSha, &versionStatus); err != nil {
+			&versionStatus, &versionRepoName, &versionCommitSha); err != nil {
 			return nil, err
 		}
 		pipelines = append(pipelines, &model.Pipeline{
@@ -138,13 +140,13 @@ func (s *PipelineStore) scanPipelineRows(rows *sql.Rows) ([]*model.Pipeline, err
 			Description:    description,
 			Status:         status,
 			DefaultVersion: &model.PipelineVersion{
-				UUID:           versionUuid,
-				CreatedAtInSec: versionCreatedAtInSec,
-				Name:           versionName,
-				Parameters:     versionParameters,
-				PipelineId:     versionPipelineId,
-				CodeSource:     model.CodeSource{RepoName: versionRepoName, CommitSHA: versionCommitSha},
-				Status:         versionStatus,
+				UUID:           versionUuid.String,
+				CreatedAtInSec: versionCreatedAtInSec.Int64,
+				Name:           versionName.String,
+				Parameters:     versionParameters.String,
+				PipelineId:     versionPipelineId.String,
+				CodeSource:     model.CodeSource{RepoName: versionRepoName.String, CommitSHA: versionCommitSha.String},
+				Status:         model.PipelineVersionStatus(versionStatus.String),
 			}})
 	}
 	return pipelines, nil
@@ -156,8 +158,8 @@ func (s *PipelineStore) scanVersionRows(rows *sql.Rows) ([]*model.PipelineVersio
 		var uuid, name, parameters, pipelineId, repoName, commitSha string
 		var createdAtInSec int64
 		var status model.PipelineVersionStatus
-		if err := rows.Scan(&uuid, &createdAtInSec, &name, &parameters, &pipelineId, &repoName,
-			&commitSha, &status); err != nil {
+		if err := rows.Scan(&uuid, &createdAtInSec, &name, &parameters, &pipelineId, &status, &repoName,
+			&commitSha); err != nil {
 			return nil, err
 		}
 		versions = append(versions, &model.PipelineVersion{
@@ -183,10 +185,10 @@ func (s *PipelineStore) GetPipelineWithStatus(id string, status model.PipelineSt
 	sql, args, err := sq.
 		Select("*").
 		From("pipelines").
-		Where(sq.Eq{"uuid": id}).
-		Where(sq.Eq{"status": status}).
+		Where(sq.Eq{"pipelines.uuid": id}).
+		Where(sq.Eq{"pipelines.status": status}).
 		Limit(1).
-		LeftJoin("pipeline_versions on pipelines.DefaultVersionId=pipeline_versions.UUID").
+		LeftJoin("pipeline_versions on pipelines.DefaultVersionId=pipeline_versions.VersionUUID").
 		ToSql()
 	if err != nil {
 		return nil, util.NewInternalServerError(err, "Failed to create query to get pipeline: %v", err.Error())
@@ -284,14 +286,14 @@ func (s *PipelineStore) CreatePipelineVersion(v *model.PipelineVersion) (*model.
 		Insert("pipeline_versions").
 		SetMap(
 		sq.Eq{
-			"UUID":           newPipelineVersion.UUID,
-			"CreatedAtInSec": newPipelineVersion.CreatedAtInSec,
-			"Name":           newPipelineVersion.Name,
-			"Parameters":     newPipelineVersion.Parameters,
-			"PipelineId":     newPipelineVersion.PipelineId,
-			"RepoName":       newPipelineVersion.CodeSource.RepoName,
-			"CommitSHA":      newPipelineVersion.CodeSource.CommitSHA,
-			"Status":         string(newPipelineVersion.Status)}).
+			"VersionUUID":           newPipelineVersion.UUID,
+			"VersionCreatedAtInSec": newPipelineVersion.CreatedAtInSec,
+			"VersionName":           newPipelineVersion.Name,
+			"VersionParameters":     newPipelineVersion.Parameters,
+			"PipelineId":            newPipelineVersion.PipelineId,
+			"RepoName":              newPipelineVersion.CodeSource.RepoName,
+			"CommitSHA":             newPipelineVersion.CodeSource.CommitSHA,
+			"VersionStatus":         string(newPipelineVersion.Status)}).
 		ToSql()
 	if err != nil {
 		return nil, util.NewInternalServerError(err, "Failed to create query to insert version to pipeline version table: %v",
@@ -317,9 +319,9 @@ func (s *PipelineStore) GetPipelineVersionWithStatus(pipelineId string, versionI
 	sql, args, err := sq.
 		Select("*").
 		From("pipeline_versions").
-		Where(sq.Eq{"uuid": versionId}).
-		Where(sq.Eq{"pipelineid": pipelineId}).
-		Where(sq.Eq{"status": status}).
+		Where(sq.Eq{"VersionUUID": versionId}).
+		Where(sq.Eq{"PipelineId": pipelineId}).
+		Where(sq.Eq{"VersionStatus": status}).
 		Limit(1).
 		ToSql()
 	if err != nil {
@@ -345,8 +347,8 @@ func (s *PipelineStore) ListPipelineVersions(pipelineId string) ([]*model.Pipeli
 	sql, args, err := sq.
 		Select("*").
 		From("pipeline_versions").
-		Where(sq.Eq{"pipelineid": pipelineId}).
-		Where(sq.Eq{"status": model.PipelineVersionReady}).
+		Where(sq.Eq{"PipelineId": pipelineId}).
+		Where(sq.Eq{"VersionStatus": model.PipelineVersionReady}).
 		ToSql()
 	if err != nil {
 		return nil, util.NewInternalServerError(err, "Failed to create query to list pipeline version: %v", err.Error())
@@ -366,8 +368,8 @@ func (s *PipelineStore) ListPipelineVersions(pipelineId string) ([]*model.Pipeli
 func (s *PipelineStore) UpdatePipelineVersionStatus(id string, status model.PipelineVersionStatus) error {
 	sql, args, err := sq.
 		Update("pipeline_versions").
-		SetMap(sq.Eq{"Status": status}).
-		Where(sq.Eq{"UUID": id}).
+		SetMap(sq.Eq{"VersionStatus": status}).
+		Where(sq.Eq{"VersionUUID": id}).
 		ToSql()
 	if err != nil {
 		return util.NewInternalServerError(err, "Failed to create query to update the pipeline version metadata: %s", err.Error())

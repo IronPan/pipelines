@@ -97,10 +97,15 @@ func ToModelJob(job *api.Job, swf *util.ScheduledWorkflow, workflowSpecManifest 
 }
 
 func ToModelPipelineVersion(version *api.PipelineVersion) *model.PipelineVersion {
+	var codeSource model.CodeSource
+	if version.CodeSource != nil {
+		codeSource.RepoName = version.CodeSource.RepoName
+		codeSource.CommitSHA = version.CodeSource.CommitSha
+	}
 	return &model.PipelineVersion{
 		UUID:       string(version.Id),
 		Name:       version.Name,
-		CodeSource: model.CodeSource{RepoName: version.CodeSource.RepoName, CommitSHA: version.CodeSource.CommitSha},
+		CodeSource: codeSource,
 	}
 }
 

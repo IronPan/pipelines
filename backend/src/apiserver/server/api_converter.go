@@ -68,6 +68,9 @@ func ToApiPipeline(pipeline *model.Pipeline) *api.Pipeline {
 }
 
 func ToApiVersion(version *model.PipelineVersion) (*api.PipelineVersion, error) {
+	if version == nil {
+		return nil, nil
+	}
 	params, err := toApiParameters(version.Parameters)
 	if err != nil {
 		return nil, err
