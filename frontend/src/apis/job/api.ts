@@ -136,7 +136,7 @@ export interface ApiJob {
     pipeline_spec?: ApiPipelineSpec;
     /**
      * Optional input field. Specify which resource this run belongs to.
-     * @type {Array&lt;ApiResourceReference&gt;}
+     * @type {Array<ApiResourceReference>}
      * @memberof ApiJob
      */
     resource_references?: Array<ApiResourceReference>;
@@ -183,7 +183,7 @@ export interface ApiJob {
      */
     error?: string;
     /**
-     * 
+     * Input. Whether the job is enabled or not.
      * @type {boolean}
      * @memberof ApiJob
      */
@@ -197,8 +197,8 @@ export interface ApiJob {
  */
 export interface ApiListJobsResponse {
     /**
-     * 
-     * @type {Array&lt;ApiJob&gt;}
+     * A list of jobs returned.
+     * @type {Array<ApiJob>}
      * @memberof ApiListJobsResponse
      */
     jobs?: Array<ApiJob>;
@@ -288,7 +288,7 @@ export interface ApiPipelineSpec {
     pipeline_manifest?: string;
     /**
      * The parameter user provide to inject to the pipeline JSON. If a default value of a parameter exist in the JSON, the value user provided here will replace.
-     * @type {Array&lt;ApiParameter&gt;}
+     * @type {Array<ApiParameter>}
      * @memberof ApiPipelineSpec
      */
     parameters?: Array<ApiParameter>;
@@ -376,14 +376,14 @@ export interface ApiStatus {
     code?: number;
     /**
      * 
-     * @type {Array&lt;ProtobufAny&gt;}
+     * @type {Array<ProtobufAny>}
      * @memberof ApiStatus
      */
     details?: Array<ProtobufAny>;
 }
 
 /**
- * 
+ * Trigger defines what starts a pipeline run.
  * @export
  * @interface ApiTrigger
  */
@@ -420,7 +420,7 @@ export enum JobMode {
  */
 export interface ProtobufAny {
     /**
-     * A URL/resource name that uniquely identifies the type of the serialized protocol buffer message. This string must contain at least one \"/\" character. The last segment of the URL's path must represent the fully qualified name of the type (as in `path/google.protobuf.Duration`). The name should be in a canonical form (e.g., leading \".\" is not accepted).  In practice, teams usually precompile into the binary all types that they expect it to use in the context of Any. However, for URLs which use the scheme `http`, `https`, or no scheme, one can optionally set up a type server that maps type URLs to message definitions as follows:  * If no scheme is provided, `https` is assumed. * An HTTP GET on the URL must yield a [google.protobuf.Type][]   value in binary format, or produce an error. * Applications are allowed to cache lookup results based on the   URL, or have them precompiled into a binary to avoid any   lookup. Therefore, binary compatibility needs to be preserved   on changes to types. (Use versioned type names to manage   breaking changes.)  Note: this functionality is not currently available in the official protobuf release, and it is not used for type URLs beginning with type.googleapis.com.  Schemes other than `http`, `https` (or the empty scheme) might be used with implementation specific semantics.
+     * A URL/resource name that uniquely identifies the type of the serialized protocol buffer message. The last segment of the URL's path must represent the fully qualified name of the type (as in `path/google.protobuf.Duration`). The name should be in a canonical form (e.g., leading \".\" is not accepted).  In practice, teams usually precompile into the binary all types that they expect it to use in the context of Any. However, for URLs which use the scheme `http`, `https`, or no scheme, one can optionally set up a type server that maps type URLs to message definitions as follows:  * If no scheme is provided, `https` is assumed. * An HTTP GET on the URL must yield a [google.protobuf.Type][]   value in binary format, or produce an error. * Applications are allowed to cache lookup results based on the   URL, or have them precompiled into a binary to avoid any   lookup. Therefore, binary compatibility needs to be preserved   on changes to types. (Use versioned type names to manage   breaking changes.)  Note: this functionality is not currently available in the official protobuf release, and it is not used for type URLs beginning with type.googleapis.com.  Schemes other than `http`, `https` (or the empty scheme) might be used with implementation specific semantics.
      * @type {string}
      * @memberof ProtobufAny
      */
@@ -442,7 +442,7 @@ export const JobServiceApiFetchParamCreator = function (configuration?: Configur
     return {
         /**
          * 
-         * @param {ApiJob} body 
+         * @param {ApiJob} body The job to be created
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -481,7 +481,7 @@ export const JobServiceApiFetchParamCreator = function (configuration?: Configur
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be deleted
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -517,7 +517,7 @@ export const JobServiceApiFetchParamCreator = function (configuration?: Configur
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be disabled
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -553,7 +553,7 @@ export const JobServiceApiFetchParamCreator = function (configuration?: Configur
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be enabled
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -589,7 +589,7 @@ export const JobServiceApiFetchParamCreator = function (configuration?: Configur
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be retrieved
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -628,13 +628,13 @@ export const JobServiceApiFetchParamCreator = function (configuration?: Configur
          * @param {string} [page_token] 
          * @param {number} [page_size] 
          * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-         * @param {string} [resource_reference_key_type] The type of the resource that referred to.
+         * @param {'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB'} [resource_reference_key_type] The type of the resource that referred to.
          * @param {string} [resource_reference_key_id] The ID of the resource that referred to.
          * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listJobs(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: string, resource_reference_key_id?: string, filter?: string, options: any = {}): FetchArgs {
+        listJobs(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: 'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB', resource_reference_key_id?: string, filter?: string, options: any = {}): FetchArgs {
             const localVarPath = `/apis/v1beta1/jobs`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -694,7 +694,7 @@ export const JobServiceApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {ApiJob} body 
+         * @param {ApiJob} body The job to be created
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -712,11 +712,11 @@ export const JobServiceApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be deleted
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteJob(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
+        deleteJob(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
             const localVarFetchArgs = JobServiceApiFetchParamCreator(configuration).deleteJob(id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -730,11 +730,11 @@ export const JobServiceApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be disabled
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        disableJob(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
+        disableJob(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
             const localVarFetchArgs = JobServiceApiFetchParamCreator(configuration).disableJob(id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -748,11 +748,11 @@ export const JobServiceApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be enabled
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        enableJob(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
+        enableJob(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
             const localVarFetchArgs = JobServiceApiFetchParamCreator(configuration).enableJob(id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -766,7 +766,7 @@ export const JobServiceApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be retrieved
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -787,13 +787,13 @@ export const JobServiceApiFp = function(configuration?: Configuration) {
          * @param {string} [page_token] 
          * @param {number} [page_size] 
          * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-         * @param {string} [resource_reference_key_type] The type of the resource that referred to.
+         * @param {'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB'} [resource_reference_key_type] The type of the resource that referred to.
          * @param {string} [resource_reference_key_id] The ID of the resource that referred to.
          * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listJobs(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: string, resource_reference_key_id?: string, filter?: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ApiListJobsResponse> {
+        listJobs(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: 'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB', resource_reference_key_id?: string, filter?: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ApiListJobsResponse> {
             const localVarFetchArgs = JobServiceApiFetchParamCreator(configuration).listJobs(page_token, page_size, sort_by, resource_reference_key_type, resource_reference_key_id, filter, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -816,7 +816,7 @@ export const JobServiceApiFactory = function (configuration?: Configuration, fet
     return {
         /**
          * 
-         * @param {ApiJob} body 
+         * @param {ApiJob} body The job to be created
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -825,7 +825,7 @@ export const JobServiceApiFactory = function (configuration?: Configuration, fet
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be deleted
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -834,7 +834,7 @@ export const JobServiceApiFactory = function (configuration?: Configuration, fet
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be disabled
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -843,7 +843,7 @@ export const JobServiceApiFactory = function (configuration?: Configuration, fet
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be enabled
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -852,7 +852,7 @@ export const JobServiceApiFactory = function (configuration?: Configuration, fet
         },
         /**
          * 
-         * @param {string} id 
+         * @param {string} id The ID of the job to be retrieved
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -864,13 +864,13 @@ export const JobServiceApiFactory = function (configuration?: Configuration, fet
          * @param {string} [page_token] 
          * @param {number} [page_size] 
          * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-         * @param {string} [resource_reference_key_type] The type of the resource that referred to.
+         * @param {'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB'} [resource_reference_key_type] The type of the resource that referred to.
          * @param {string} [resource_reference_key_id] The ID of the resource that referred to.
          * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listJobs(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: string, resource_reference_key_id?: string, filter?: string, options?: any) {
+        listJobs(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: 'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB', resource_reference_key_id?: string, filter?: string, options?: any) {
             return JobServiceApiFp(configuration).listJobs(page_token, page_size, sort_by, resource_reference_key_type, resource_reference_key_id, filter, options)(fetch, basePath);
         },
     };
@@ -885,7 +885,7 @@ export const JobServiceApiFactory = function (configuration?: Configuration, fet
 export class JobServiceApi extends BaseAPI {
     /**
      * 
-     * @param {} body 
+     * @param {ApiJob} body The job to be created
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof JobServiceApi
@@ -896,7 +896,7 @@ export class JobServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} id 
+     * @param {string} id The ID of the job to be deleted
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof JobServiceApi
@@ -907,7 +907,7 @@ export class JobServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} id 
+     * @param {string} id The ID of the job to be disabled
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof JobServiceApi
@@ -918,7 +918,7 @@ export class JobServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} id 
+     * @param {string} id The ID of the job to be enabled
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof JobServiceApi
@@ -929,7 +929,7 @@ export class JobServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} id 
+     * @param {string} id The ID of the job to be retrieved
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof JobServiceApi
@@ -940,17 +940,17 @@ export class JobServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} [page_token] 
-     * @param {} [page_size] 
-     * @param {} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-     * @param {} [resource_reference_key_type] The type of the resource that referred to.
-     * @param {} [resource_reference_key_id] The ID of the resource that referred to.
-     * @param {} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
+     * @param {string} [page_token] 
+     * @param {number} [page_size] 
+     * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
+     * @param {'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB'} [resource_reference_key_type] The type of the resource that referred to.
+     * @param {string} [resource_reference_key_id] The ID of the resource that referred to.
+     * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof JobServiceApi
      */
-    public listJobs(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: string, resource_reference_key_id?: string, filter?: string, options?: any) {
+    public listJobs(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: 'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB', resource_reference_key_id?: string, filter?: string, options?: any) {
         return JobServiceApiFp(this.configuration).listJobs(page_token, page_size, sort_by, resource_reference_key_type, resource_reference_key_id, filter, options)(this.fetch, this.basePath);
     }
 

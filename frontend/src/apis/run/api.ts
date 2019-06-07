@@ -86,7 +86,7 @@ export class RequiredError extends Error {
 export interface ApiListRunsResponse {
     /**
      * 
-     * @type {Array&lt;ApiRun&gt;}
+     * @type {Array<ApiRun>}
      * @memberof ApiListRunsResponse
      */
     runs?: Array<ApiRun>;
@@ -170,7 +170,7 @@ export interface ApiPipelineSpec {
     pipeline_manifest?: string;
     /**
      * The parameter user provide to inject to the pipeline JSON. If a default value of a parameter exist in the JSON, the value user provided here will replace.
-     * @type {Array&lt;ApiParameter&gt;}
+     * @type {Array<ApiParameter>}
      * @memberof ApiPipelineSpec
      */
     parameters?: Array<ApiParameter>;
@@ -215,7 +215,7 @@ export interface ApiReportRunMetricsRequest {
     run_id?: string;
     /**
      * List of metrics to report.
-     * @type {Array&lt;ApiRunMetric&gt;}
+     * @type {Array<ApiRunMetric>}
      * @memberof ApiReportRunMetricsRequest
      */
     metrics?: Array<ApiRunMetric>;
@@ -229,7 +229,7 @@ export interface ApiReportRunMetricsRequest {
 export interface ApiReportRunMetricsResponse {
     /**
      * 
-     * @type {Array&lt;ReportRunMetricsResponseReportRunMetricResult&gt;}
+     * @type {Array<ReportRunMetricsResponseReportRunMetricResult>}
      * @memberof ApiReportRunMetricsResponse
      */
     results?: Array<ReportRunMetricsResponseReportRunMetricResult>;
@@ -324,7 +324,7 @@ export interface ApiRun {
     pipeline_spec?: ApiPipelineSpec;
     /**
      * Optional input field. Specify which resource this run belongs to.
-     * @type {Array&lt;ApiResourceReference&gt;}
+     * @type {Array<ApiResourceReference>}
      * @memberof ApiRun
      */
     resource_references?: Array<ApiResourceReference>;
@@ -341,7 +341,7 @@ export interface ApiRun {
      */
     scheduled_at?: Date;
     /**
-     * Output. When this run is finished.
+     * Output. The time this run is finished.
      * @type {Date}
      * @memberof ApiRun
      */
@@ -360,7 +360,7 @@ export interface ApiRun {
     error?: string;
     /**
      * Output. The metrics of the run. The metrics are reported by ReportMetrics API.
-     * @type {Array&lt;ApiRunMetric&gt;}
+     * @type {Array<ApiRunMetric>}
      * @memberof ApiRun
      */
     metrics?: Array<ApiRunMetric>;
@@ -438,7 +438,7 @@ export interface ApiStatus {
     code?: number;
     /**
      * 
-     * @type {Array&lt;ProtobufAny&gt;}
+     * @type {Array<ProtobufAny>}
      * @memberof ApiStatus
      */
     details?: Array<ProtobufAny>;
@@ -689,13 +689,13 @@ export const RunServiceApiFetchParamCreator = function (configuration?: Configur
          * @param {string} [page_token] 
          * @param {number} [page_size] 
          * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-         * @param {string} [resource_reference_key_type] The type of the resource that referred to.
+         * @param {'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB'} [resource_reference_key_type] The type of the resource that referred to.
          * @param {string} [resource_reference_key_id] The ID of the resource that referred to.
          * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listRuns(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: string, resource_reference_key_id?: string, filter?: string, options: any = {}): FetchArgs {
+        listRuns(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: 'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB', resource_reference_key_id?: string, filter?: string, options: any = {}): FetchArgs {
             const localVarPath = `/apis/v1beta1/runs`;
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
@@ -925,7 +925,7 @@ export const RunServiceApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        archiveRun(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
+        archiveRun(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
             const localVarFetchArgs = RunServiceApiFetchParamCreator(configuration).archiveRun(id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -961,7 +961,7 @@ export const RunServiceApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteRun(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
+        deleteRun(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
             const localVarFetchArgs = RunServiceApiFetchParamCreator(configuration).deleteRun(id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -996,13 +996,13 @@ export const RunServiceApiFp = function(configuration?: Configuration) {
          * @param {string} [page_token] 
          * @param {number} [page_size] 
          * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-         * @param {string} [resource_reference_key_type] The type of the resource that referred to.
+         * @param {'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB'} [resource_reference_key_type] The type of the resource that referred to.
          * @param {string} [resource_reference_key_id] The ID of the resource that referred to.
          * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listRuns(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: string, resource_reference_key_id?: string, filter?: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ApiListRunsResponse> {
+        listRuns(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: 'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB', resource_reference_key_id?: string, filter?: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ApiListRunsResponse> {
             const localVarFetchArgs = RunServiceApiFetchParamCreator(configuration).listRuns(page_token, page_size, sort_by, resource_reference_key_type, resource_reference_key_id, filter, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -1060,7 +1060,7 @@ export const RunServiceApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        terminateRun(run_id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
+        terminateRun(run_id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
             const localVarFetchArgs = RunServiceApiFetchParamCreator(configuration).terminateRun(run_id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -1078,7 +1078,7 @@ export const RunServiceApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        unarchiveRun(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
+        unarchiveRun(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
             const localVarFetchArgs = RunServiceApiFetchParamCreator(configuration).unarchiveRun(id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -1140,13 +1140,13 @@ export const RunServiceApiFactory = function (configuration?: Configuration, fet
          * @param {string} [page_token] 
          * @param {number} [page_size] 
          * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-         * @param {string} [resource_reference_key_type] The type of the resource that referred to.
+         * @param {'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB'} [resource_reference_key_type] The type of the resource that referred to.
          * @param {string} [resource_reference_key_id] The ID of the resource that referred to.
          * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listRuns(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: string, resource_reference_key_id?: string, filter?: string, options?: any) {
+        listRuns(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: 'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB', resource_reference_key_id?: string, filter?: string, options?: any) {
             return RunServiceApiFp(configuration).listRuns(page_token, page_size, sort_by, resource_reference_key_type, resource_reference_key_id, filter, options)(fetch, basePath);
         },
         /**
@@ -1201,7 +1201,7 @@ export const RunServiceApiFactory = function (configuration?: Configuration, fet
 export class RunServiceApi extends BaseAPI {
     /**
      * 
-     * @param {} id 
+     * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
@@ -1212,7 +1212,7 @@ export class RunServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} body 
+     * @param {ApiRun} body 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
@@ -1223,7 +1223,7 @@ export class RunServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} id 
+     * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
@@ -1234,7 +1234,7 @@ export class RunServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} run_id 
+     * @param {string} run_id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
@@ -1245,25 +1245,25 @@ export class RunServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} [page_token] 
-     * @param {} [page_size] 
-     * @param {} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-     * @param {} [resource_reference_key_type] The type of the resource that referred to.
-     * @param {} [resource_reference_key_id] The ID of the resource that referred to.
-     * @param {} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
+     * @param {string} [page_token] 
+     * @param {number} [page_size] 
+     * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
+     * @param {'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB'} [resource_reference_key_type] The type of the resource that referred to.
+     * @param {string} [resource_reference_key_id] The ID of the resource that referred to.
+     * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
      */
-    public listRuns(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: string, resource_reference_key_id?: string, filter?: string, options?: any) {
+    public listRuns(page_token?: string, page_size?: number, sort_by?: string, resource_reference_key_type?: 'UNKNOWN_RESOURCE_TYPE' | 'EXPERIMENT' | 'JOB', resource_reference_key_id?: string, filter?: string, options?: any) {
         return RunServiceApiFp(this.configuration).listRuns(page_token, page_size, sort_by, resource_reference_key_type, resource_reference_key_id, filter, options)(this.fetch, this.basePath);
     }
 
     /**
      * 
-     * @param {} run_id The ID of the run.
-     * @param {} node_id The ID of the running node.
-     * @param {} artifact_name The name of the artifact.
+     * @param {string} run_id The ID of the run.
+     * @param {string} node_id The ID of the running node.
+     * @param {string} artifact_name The name of the artifact.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
@@ -1275,8 +1275,8 @@ export class RunServiceApi extends BaseAPI {
     /**
      * 
      * @summary ReportRunMetrics reports metrics of a run. Each metric is reported in its own transaction, so this API accepts partial failures. Metric can be uniquely identified by (run_id, node_id, name). Duplicate reporting will be ignored by the API. First reporting wins.
-     * @param {} run_id Required. The parent run ID of the metric.
-     * @param {} body 
+     * @param {string} run_id Required. The parent run ID of the metric.
+     * @param {ApiReportRunMetricsRequest} body 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
@@ -1287,7 +1287,7 @@ export class RunServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} run_id 
+     * @param {string} run_id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
@@ -1298,7 +1298,7 @@ export class RunServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {} id 
+     * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RunServiceApi
