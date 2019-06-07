@@ -148,29 +148,28 @@ func (r *ResourceManager) CreatePipelineVersion(apiVersion *api.PipelineVersion,
 	version.Status = model.PipelineVersionCreating
 	version.PipelineId = pipelineId
 	version.Parameters = params
-	newPipelineVersion, err := r.pipelineStore.CreatePipelineVersion(version)
+	version, err = r.pipelineStore.CreatePipelineVersion(version)
 	if err != nil {
 		return nil, util.Wrap(err, "Create pipeline version failed")
 	}
 
 	// Store the pipeline file
-	err = r.objectStore.AddFile(pipelineFile, storage.CreatePipelinePath(fmt.Sprint(newPipelineVersion.UUID)))
+	err = r.objectStore.AddFile(pipelineFile, storage.CreatePipelinePath(fmt.Sprint(version.UUID)))
 	if err != nil {
 		return nil, util.Wrap(err, "Create pipeline version failed")
 	}
 
-	newPipelineVersion.Status = model.PipelineVersionReady
-	err = r.pipelineStore.UpdatePipelineVersionStatus(newPipelineVersion.UUID, newPipelineVersion.Status)
+	version.Status = model.PipelineVersionReady
+	err = r.pipelineStore.UpdatePipelineVersionStatus(version.UUID, version.Status)
 	if err != nil {
 		return nil, util.Wrap(err, "Create pipeline failed")
 	}
-	glog.Infof("start update pipeline default version")
 	err = r.pipelineStore.UpdatePipelineDefaultVersion(pipelineId, version.UUID)
 	if err != nil {
 		return nil, util.Wrap(err, "Failed to update pipeline default version.")
 	}
 
-	return newPipelineVersion, nil
+	return version, nil
 }
 
 func (r *ResourceManager) GetPipelineVersion(pipelineId string, versionId string) (*model.PipelineVersion, error) {

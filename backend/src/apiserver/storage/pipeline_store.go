@@ -272,7 +272,6 @@ func (s *PipelineStore) UpdatePipelineDefaultVersion(pipelineId string, versionI
 	if err != nil {
 		return util.NewInternalServerError(err, "Failed to update the pipeline default version: %s", err.Error())
 	}
-	glog.Infof("done update pipeline default version. pipeline %s version %s", pipelineId, versionId)
 
 	return nil
 }
