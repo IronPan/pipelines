@@ -37,6 +37,33 @@ const NUM_DUMMY_RUNS = 20;
 
 const pipelines: ApiPipeline[] = [
   {
+    created_at: new Date('2019-04-01T17:53:21.000Z'),
+    description: 'A versioned pipeline.',
+    id: '8fbe3bd6-1234-4321-98d0-529269fb1459',
+    name: 'Versioned Pipeline',
+    parameters: [
+      {
+        name: 'x',
+      },
+      {
+        name: 'y',
+      },
+      {
+        name: 'output',
+      }
+    ],
+    versions: [
+      {
+        url: 'some-url',
+        version_id: 'v1'
+      },
+      {
+        url: 'another-url',
+        version_id: 'v2'
+      }
+    ]
+  },
+  {
     created_at: new Date('2018-04-01T20:58:23.000Z'),
     description: 'An awesome unstructured text pipeline.',
     id: '8fbe3bd6-a01f-11e8-98d0-529269fb1459',

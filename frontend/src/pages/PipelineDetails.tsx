@@ -29,7 +29,11 @@ import RunUtils from '../lib/RunUtils';
 import SidePanel from '../components/SidePanel';
 import StaticNodeDetails from '../components/StaticNodeDetails';
 import { ApiExperiment } from '../apis/experiment';
+<<<<<<< HEAD
 import { ApiGetTemplateResponse, ApiPipelineVersion} from '../apis/pipeline';
+=======
+import { ApiPipeline, ApiGetTemplateResponse, ApiVersion } from '../apis/pipeline';
+>>>>>>> 260ce019... Selector on pipeline details page is working
 import { Apis } from '../lib/Apis';
 import { Page } from './Page';
 import { RoutePage, RouteParams, QUERY_PARAMS } from '../components/Router';
@@ -40,6 +44,10 @@ import { Workflow } from '../../third_party/argo-ui/argo_template';
 import { classes, stylesheet } from 'typestyle';
 import { color, commonCss, padding, fontsize, fonts, zIndex } from '../Css';
 import { logger, formatDateString } from '../lib/Utils';
+import Select from '@material-ui/core/Select';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
 
 interface PipelineDetailsState {
   graph?: dagre.graphlib.Graph;
@@ -47,6 +55,7 @@ interface PipelineDetailsState {
   selectedNodeId: string;
   selectedNodeInfo: JSX.Element | null;
   selectedTab: number;
+  selectedVersion?: ApiVersion;
   summaryShown: boolean;
   template?: Workflow;
   templateString?: string;
@@ -147,7 +156,11 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
   }
 
   public render(): JSX.Element {
+<<<<<<< HEAD
     const { pipelineVersion, selectedNodeId, selectedTab, summaryShown, templateString } = this.state;
+=======
+    const { pipeline, selectedNodeId, selectedTab, selectedVersion, summaryShown, templateString } = this.state;
+>>>>>>> 260ce019... Selector on pipeline details page is working
 
     let selectedNodeInfo: StaticGraphParser.SelectedNodeInfo | null = null;
     if (this.state.graph && this.state.graph.node(selectedNodeId)) {
@@ -179,6 +192,23 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
                         Hide
                         </Button>
                     </div>
+                    {(pipeline.versions && pipeline.versions.length) && (
+                      <React.Fragment>
+                        <form autoComplete='off'>
+                          <FormControl>
+                            <InputLabel>Version</InputLabel>
+                            <Select
+                              value={selectedVersion ? selectedVersion.version_id : pipeline.versions[0].version_id}
+                              onChange={(event) => this.handleVersionSelected(event.target.value)}
+                              inputProps={{ id: 'version-selector', name: 'selectedVersion' }}
+                            >
+                              {pipeline.versions.map((v, i) => <MenuItem key={i} value={v.version_id}>{v.version_id}</MenuItem>)}
+                            </Select>
+                          </FormControl>
+                        </form>
+                        <div className={css.summaryKey}><a href={selectedVersion!.url}>Version source</a></div>
+                      </React.Fragment>
+                    )}
                     <div className={css.summaryKey}>Uploaded on</div>
                     <div>{formatDateString(pipelineVersion.created_at)}</div>
                     <div className={css.summaryKey}>Description</div>
@@ -234,6 +264,13 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     );
   }
 
+  public handleVersionSelected(versionId: string): void {
+    if (this.state.pipeline) {
+      const selectedVersion = (this.state.pipeline.versions || []).find(v => v.version_id === versionId);
+      this.setStateSafe({ selectedVersion });
+    }
+  }
+
   public async refresh(): Promise<void> {
     return this.load();
   }
@@ -252,6 +289,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     let breadcrumbs: Array<{ displayName: string, href: string }> = [];
     const toolbarActions = [...this.props.toolbarProps.actions];
     let pageTitle = '';
+    let selectedVersion: ApiVersion | undefined;
 
     // If fromRunId is specified, load the run and get the pipeline template from it
     if (fromRunId) {
@@ -311,8 +349,14 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
       let templateResponse: ApiGetTemplateResponse;
 
       try {
+<<<<<<< HEAD
         pipelineVersion = await Apis.pipelineServiceApi.getPipelineVersion(pipelineId,versionId);
         pageTitle = pipelineVersion.name!;
+=======
+        pipeline = await Apis.pipelineServiceApi.getPipeline(pipelineId);
+        pageTitle = pipeline.name!;
+        selectedVersion = pipeline.versions ? pipeline.versions[0] : undefined;
+>>>>>>> 260ce019... Selector on pipeline details page is working
       } catch (err) {
         await this.showPageError('Cannot retrieve pipeline details.', err);
         logger.error('Cannot retrieve pipeline details.', err);
@@ -344,7 +388,12 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
 
     this.setStateSafe({
       graph: g,
+<<<<<<< HEAD
       pipelineVersion,
+=======
+      pipeline,
+      selectedVersion,
+>>>>>>> 260ce019... Selector on pipeline details page is working
       template,
       templateString,
     });
