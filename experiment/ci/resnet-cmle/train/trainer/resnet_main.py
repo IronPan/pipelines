@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-
 """Train a ResNet-50 model on ImageNet on TPU."""
 
 from __future__ import absolute_import
