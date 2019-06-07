@@ -122,14 +122,14 @@ class Client(object):
     # In-cluster pod. We could use relative URL.
     return '/pipeline'
 
-  def create_pipeline_version(self, pipeline_id, name, url):
+  def create_pipeline_version(self, pipeline_id, name, url, repo_name,commit_sha):
     """Create a new pipeline version.
     Args:
       name: the name of the pipeline.
     Returns:
       A pipeline object. Most important field is id.
     """
-    pipeline_version = kfp_server_api.models.ApiPipelineVersion(name=name,url={'pipeline_url':url})
+    pipeline_version = kfp_server_api.models.ApiPipelineVersion(name=name,url={'pipeline_url':url},code_source={"repo_name":repo_name,"commit_sha":commit_sha})
     pipeline_version = self._pipeline_api.create_pipeline_version(pipeline_id=pipeline_id,body=pipeline_version)
     return pipeline_version
 
