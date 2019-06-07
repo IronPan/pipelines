@@ -21,7 +21,7 @@ import proxyMiddleware from '../server/proxy-middleware';
 import { ApiFilter, PredicateOp } from '../src/apis/filter';
 import { ApiListExperimentsResponse, ApiExperiment } from '../src/apis/experiment';
 import { ApiListJobsResponse, ApiJob } from '../src/apis/job';
-import { ApiListPipelinesResponse, ApiPipeline } from '../src/apis/pipeline';
+import { ApiListPipelinesResponse, ApiPipeline, ApiListPipelineVersionsResponse, ApiPipelineVersion } from '../src/apis/pipeline';
 import { ApiListRunsResponse, ApiResourceType, ApiRun, RunStorageState } from '../src/apis/run';
 import { ExperimentSortKeys, PipelineSortKeys, RunSortKeys } from '../src/lib/Apis';
 import { Response } from 'express-serve-static-core';
@@ -407,6 +407,7 @@ export default (app: express.Application) => {
     return resources;
   }
 
+  // GetPipeline
   app.get(v1beta1Prefix + '/pipelines', (req, res) => {
     res.header('Content-Type', 'application/json');
     const response: ApiListPipelinesResponse = {
@@ -443,6 +444,7 @@ export default (app: express.Application) => {
     res.json(response);
   });
 
+  // DeletePipeline
   app.delete(v1beta1Prefix + '/pipelines/:pid', (req, res) => {
     res.header('Content-Type', 'application/json');
     const i = fixedData.pipelines.findIndex((p) => p.id === req.params.pid);
@@ -461,6 +463,7 @@ export default (app: express.Application) => {
     res.json({});
   });
 
+  // GetPipeline
   app.get(v1beta1Prefix + '/pipelines/:pid', (req, res) => {
     res.header('Content-Type', 'application/json');
     const pipeline = fixedData.pipelines.find((p) => p.id === req.params.pid);
@@ -471,6 +474,20 @@ export default (app: express.Application) => {
     res.json(pipeline);
   });
 
+  // ListPipelineVersions
+  app.get(v1beta1Prefix + '/pipelines/:pid/versions', (req, res) => {
+    res.header('Content-Type', 'application/json');
+
+    // TODO: this should only find versions for the given pipeline ID, but as of 6/6/2019 this data
+    // is not available in the API definition.
+    const response: ApiListPipelineVersionsResponse = {
+      versions: fixedData.pipelineVersions,
+    };
+
+    res.json(response);
+  });
+
+  // GetTemplate
   app.get(v1beta1Prefix + '/pipelines/:pid/templates', (req, res) => {
     res.header('Content-Type', 'text/x-yaml');
     const pipeline = fixedData.pipelines.find((p) => p.id === req.params.pid);
@@ -520,6 +537,7 @@ export default (app: express.Application) => {
     }
   }
 
+  // CretePipeline
   app.post(v1beta1Prefix + '/pipelines', (req, res) => {
     mockCreatePipeline(res, req.body.name);
   });

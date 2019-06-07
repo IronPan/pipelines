@@ -64,6 +64,9 @@ describe('PipelineDetails', () => {
 
     testPipeline = {
       created_at: new Date(2018, 8, 5, 4, 3, 2),
+      default_version: {
+        parameters: [{ name: 'param1', value: 'value1' }],
+      },
       description: 'test pipeline description',
       id: 'test-pipeline-id',
       name: 'test pipeline',

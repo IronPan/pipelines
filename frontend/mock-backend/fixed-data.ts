@@ -19,7 +19,7 @@ import errorRun from './mock-error-runtime';
 import xgboostRun from './mock-xgboost-runtime';
 import { ApiExperiment } from '../src/apis/experiment';
 import { ApiJob } from '../src/apis/job';
-import { ApiPipeline } from '../src/apis/pipeline';
+import { ApiPipeline, ApiPipelineVersion } from '../src/apis/pipeline';
 import { ApiRunDetail, ApiResourceType, ApiRelationship, RunMetricFormat } from '../src/apis/run';
 
 function padStartTwoZeroes(str: string): string {
@@ -35,23 +35,68 @@ const NUM_DUMMY_PIPELINES = 30;
 const NUM_DUMMY_JOBS = 20;
 const NUM_DUMMY_RUNS = 20;
 
+const pipelineVersions: ApiPipelineVersion[] = [
+  {
+    code_source: {
+      commit_sha: 'a3766aad10385ab504db434c239fbfec0f856162',
+      repo_name: 'github.com/kubeflow/pipelines',
+    },
+    created_at: new Date('2019-04-01T17:53:21.000Z'),
+    id: 'v1',
+    name: 'version 1',
+    parameters: [
+      {
+        name: 'v1-x',
+      },
+      {
+        name: 'v1-y',
+      },
+      {
+        name: 'v1-output',
+      }
+    ],
+  },
+  {
+    code_source: {
+      commit_sha: '8c779a2fe63795ed646001c76e7f4a683f3b8e7e',
+      repo_name: 'github.com/kubeflow/pipelines',
+    },
+    created_at: new Date('2019-05-02T17:53:21.000Z'),
+    id: 'v2',
+    name: 'version 2',
+    parameters: [
+      {
+        name: 'v2-x',
+      },
+      {
+        name: 'v2-y',
+      },
+      {
+        name: 'v2-output',
+      }
+    ],
+  },
+];
+
 const pipelines: ApiPipeline[] = [
   {
     created_at: new Date('2019-04-01T17:53:21.000Z'),
+    default_version: {
+      parameters: [
+        {
+          name: 'x',
+        },
+        {
+          name: 'y',
+        },
+        {
+          name: 'output',
+        }
+      ],
+    },
     description: 'A versioned pipeline.',
     id: '8fbe3bd6-1234-4321-98d0-529269fb1459',
     name: 'Versioned Pipeline',
-    parameters: [
-      {
-        name: 'x',
-      },
-      {
-        name: 'y',
-      },
-      {
-        name: 'output',
-      }
-    ],
     versions: [
       {
         url: 'some-url',
@@ -65,71 +110,77 @@ const pipelines: ApiPipeline[] = [
   },
   {
     created_at: new Date('2018-04-01T20:58:23.000Z'),
+    default_version: {
+      parameters: [
+        {
+          name: 'x',
+        },
+        {
+          name: 'y',
+        },
+        {
+          name: 'output',
+        },
+      ],
+    },
     description: 'An awesome unstructured text pipeline.',
     id: '8fbe3bd6-a01f-11e8-98d0-529269fb1459',
     name: 'Unstructured text',
-    parameters: [
-      {
-        name: 'x',
-      },
-      {
-        name: 'y',
-      },
-      {
-        name: 'output',
-      }
-    ]
   },
   {
     created_at: new Date('2018-04-02T20:59:29.000Z'),
+    default_version: {
+      parameters: [
+        {
+          name: 'project',
+        },
+        {
+          name: 'workers',
+        },
+        {
+          name: 'rounds',
+        },
+        {
+          name: 'output',
+        },
+      ],
+    },
     description: 'An awesome image classification pipeline.',
     id: '8fbe3f78-a01f-11e8-98d0-529269fb1459',
     name: 'Image classification',
-    parameters: [
-      {
-        name: 'project',
-      },
-      {
-        name: 'workers',
-      },
-      {
-        name: 'rounds',
-      },
-      {
-        name: 'output',
-      }
-    ]
   },
   {
     created_at: new Date('2018-04-03T20:58:23.000Z'),
+    default_version: { parameters: [] },
     description: 'This pipeline has no parameters',
     id: '8fbe41b2-a01f-11e8-98d0-529269fb1459',
     name: 'No parameters',
-    parameters: [],
   },
   {
     created_at: new Date('2018-04-04T20:58:23.000Z'),
+    default_version: { parameters: undefined as any },
     description: 'This pipeline has undefined parameters',
     id: '8fbe42f2-a01f-11e8-98d0-529269fb1459',
     name: 'Undefined parameters',
-    parameters: undefined as any,
   },
   {
     created_at: new Date('2018-04-01T20:59:23.000Z'),
+    default_version: {
+      parameters: [
+        {
+          name: 'xx',
+        },
+        {
+          name: 'yy',
+        },
+        {
+          name: 'output',
+        },
+      ],
+    },
     description: 'Trying to delete this Pipeline will result in an error.',
     id: '8fbe3bd6-a01f-11e8-98d0-529269fb1460',
     name: 'Cannot be deleted',
-    parameters: [
-      {
-        name: 'xx',
-      },
-      {
-        name: 'yy',
-      },
-      {
-        name: 'output',
-      }
-    ]
   },
 ];
 
@@ -574,15 +625,17 @@ function generateNPipelines(): ApiPipeline[] {
   for (let i = pipelines.length + 1; i < NUM_DUMMY_PIPELINES + pipelines.length + 1; i++) {
     dummyPipelines.push({
       created_at: new Date('2018-02-12T20:' + padStartTwoZeroes(i.toString()) + ':23.000Z'),
+      default_version: {
+        parameters: [
+          {
+            name: 'project',
+            value: 'my-cloud-project',
+          },
+        ],
+      },
       description: `A dummy pipeline (${i})`,
       id: 'Some-pipeline-id-' + i,
       name: 'Kubeflow Pipeline number ' + i,
-      parameters: [
-        {
-          name: 'project',
-          value: 'my-cloud-project',
-        },
-      ],
     });
   }
   return dummyPipelines;
@@ -691,6 +744,7 @@ function generateNJobs(): ApiJob[] {
 export const data = {
   experiments,
   jobs,
+  pipelineVersions,
   pipelines,
   runs,
 };

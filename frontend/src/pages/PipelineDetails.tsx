@@ -29,11 +29,7 @@ import RunUtils from '../lib/RunUtils';
 import SidePanel from '../components/SidePanel';
 import StaticNodeDetails from '../components/StaticNodeDetails';
 import { ApiExperiment } from '../apis/experiment';
-<<<<<<< HEAD
-import { ApiGetTemplateResponse, ApiPipelineVersion} from '../apis/pipeline';
-=======
 import { ApiPipeline, ApiGetTemplateResponse, ApiVersion } from '../apis/pipeline';
->>>>>>> 260ce019... Selector on pipeline details page is working
 import { Apis } from '../lib/Apis';
 import { Page } from './Page';
 import { RoutePage, RouteParams, QUERY_PARAMS } from '../components/Router';
@@ -51,7 +47,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 interface PipelineDetailsState {
   graph?: dagre.graphlib.Graph;
-  pipelineVersion: ApiPipelineVersion | null;
+  pipeline: ApiPipeline | null;
   selectedNodeId: string;
   selectedNodeInfo: JSX.Element | null;
   selectedTab: number;
@@ -113,7 +109,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     super(props);
 
     this.state = {
-      pipelineVersion: null,
+      pipeline: null,
       selectedNodeId: '',
       selectedNodeInfo: null,
       selectedTab: 0,
@@ -125,7 +121,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     const buttons = new Buttons(this.props, this.refresh.bind(this));
     const fromRunId = new URLParser(this.props).get(QUERY_PARAMS.fromRunId);
     let actions: ToolbarActionConfig[] = [
-      buttons.newRunFromPipeline(() => this.state.pipelineVersion ? this.state.pipelineVersion.id! : ''),
+      buttons.newRunFromPipeline(() => this.state.pipeline ? this.state.pipeline.id! : ''),
     ];
 
     if (fromRunId) {
@@ -139,9 +135,9 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     } else {
       // Add buttons for creating experiment and deleting pipeline
       actions = actions.concat([
-        buttons.newExperiment(() => this.state.pipelineVersion ? this.state.pipelineVersion.id! : ''),
+        buttons.newExperiment(() => this.state.pipeline ? this.state.pipeline.id! : ''),
         buttons.delete(
-          () => this.state.pipelineVersion ? [this.state.pipelineVersion.id!] : [],
+          () => this.state.pipeline ? [this.state.pipeline.id!] : [],
           'pipeline',
           this._deleteCallback.bind(this),
           true, /* useCurrentResource */
@@ -156,11 +152,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
   }
 
   public render(): JSX.Element {
-<<<<<<< HEAD
-    const { pipelineVersion, selectedNodeId, selectedTab, summaryShown, templateString } = this.state;
-=======
     const { pipeline, selectedNodeId, selectedTab, selectedVersion, summaryShown, templateString } = this.state;
->>>>>>> 260ce019... Selector on pipeline details page is working
 
     let selectedNodeInfo: StaticGraphParser.SelectedNodeInfo | null = null;
     if (this.state.graph && this.state.graph.node(selectedNodeId)) {
@@ -182,15 +174,15 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
           <div className={commonCss.page}>
             {selectedTab === 0 && <div className={commonCss.page}>
               {this.state.graph && <div className={commonCss.page} style={{ position: 'relative', overflow: 'hidden' }}>
-                {!!pipelineVersion && summaryShown && (
+                {!!pipeline && summaryShown && (
                   <Paper className={css.summaryCard}>
                     <div style={{ alignItems: 'baseline', display: 'flex', justifyContent: 'space-between' }}>
                       <div className={commonCss.header}>
                         Summary
-                        </div>
+                      </div>
                       <Button onClick={() => this.setStateSafe({ summaryShown: false })} color='secondary'>
                         Hide
-                        </Button>
+                      </Button>
                     </div>
                     {(pipeline.versions && pipeline.versions.length) && (
                       <React.Fragment>
@@ -210,8 +202,9 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
                       </React.Fragment>
                     )}
                     <div className={css.summaryKey}>Uploaded on</div>
-                    <div>{formatDateString(pipelineVersion.created_at)}</div>
+                    <div>{formatDateString(pipeline.created_at)}</div>
                     <div className={css.summaryKey}>Description</div>
+                    <div>{pipeline.description}</div>
                   </Paper>
                 )}
 
@@ -235,7 +228,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
                       Show summary
                     </Button>
                   )}
-                  <div className={classes(commonCss.flex, (summaryShown && !!pipelineVersion) && css.footerInfoOffset)}>
+                  <div className={classes(commonCss.flex, (summaryShown && !!pipeline) && css.footerInfoOffset)}>
                     <InfoIcon className={commonCss.infoIcon} />
                     <span className={css.infoSpan}>Static pipeline graph</span>
                   </div>
@@ -264,10 +257,11 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     );
   }
 
-  public handleVersionSelected(versionId: string): void {
+  public async handleVersionSelected(versionId: string): Promise<void> {
     if (this.state.pipeline) {
       const selectedVersion = (this.state.pipeline.versions || []).find(v => v.version_id === versionId);
-      this.setStateSafe({ selectedVersion });
+      const selectedVersionPipelineTemplate = await Apis.pipelineServiceApi.getPipelineVersionTemplate(this.state.pipeline.id!, versionId);
+      this.setStateSafe({ selectedVersion, templateString: selectedVersionPipelineTemplate.template });
     }
   }
 
@@ -283,7 +277,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     this.clearBanner();
     const fromRunId = new URLParser(this.props).get(QUERY_PARAMS.fromRunId);
 
-    let pipelineVersion: ApiPipelineVersion | null = null;
+    let pipeline: ApiPipeline | null = null;
     let templateString = '';
     let template: Workflow | undefined;
     let breadcrumbs: Array<{ displayName: string, href: string }> = [];
@@ -345,18 +339,12 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     } else {
       // if fromRunId is not specified, then we have a full pipeline
       const pipelineId = this.props.match.params[RouteParams.pipelineId];
-      const versionId = this.props.match.params[RouteParams.pipelineVersionId];
       let templateResponse: ApiGetTemplateResponse;
 
       try {
-<<<<<<< HEAD
-        pipelineVersion = await Apis.pipelineServiceApi.getPipelineVersion(pipelineId,versionId);
-        pageTitle = pipelineVersion.name!;
-=======
         pipeline = await Apis.pipelineServiceApi.getPipeline(pipelineId);
         pageTitle = pipeline.name!;
         selectedVersion = pipeline.versions ? pipeline.versions[0] : undefined;
->>>>>>> 260ce019... Selector on pipeline details page is working
       } catch (err) {
         await this.showPageError('Cannot retrieve pipeline details.', err);
         logger.error('Cannot retrieve pipeline details.', err);
@@ -388,12 +376,8 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
 
     this.setStateSafe({
       graph: g,
-<<<<<<< HEAD
-      pipelineVersion,
-=======
       pipeline,
       selectedVersion,
->>>>>>> 260ce019... Selector on pipeline details page is working
       template,
       templateString,
     });
