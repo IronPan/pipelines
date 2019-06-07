@@ -50,7 +50,7 @@ const {
   /** API service will listen to this host */
   ML_PIPELINE_SERVICE_HOST = 'localhost',
   /** API service will listen to this port */
-  ML_PIPELINE_SERVICE_PORT = '3001'
+  ML_PIPELINE_SERVICE_PORT = '8888'
 } = process.env;
 
 /** construct minio endpoint from host and namespace (optional) */

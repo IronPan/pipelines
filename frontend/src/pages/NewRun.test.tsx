@@ -928,7 +928,6 @@ describe('NewRun', () => {
         description: 'test run description',
         name: 'test run name',
         pipeline_spec: {
-          parameters: MOCK_PIPELINE.parameters,
           pipeline_id: MOCK_PIPELINE.id,
         },
         resource_references: [{
@@ -944,10 +943,6 @@ describe('NewRun', () => {
     it('updates the pipeline in state when a user fills in its params', async () => {
       const props = generateProps();
       const pipeline = newMockPipeline();
-      pipeline.parameters = [
-        { name: 'param-1', value: '' },
-        { name: 'param-2', value: 'prefilled value' },
-      ];
       props.location.search = `?${QUERY_PARAMS.pipelineId}=${pipeline.id}`;
 
       getPipelineSpy.mockImplementation(() => pipeline);
@@ -1010,10 +1005,6 @@ describe('NewRun', () => {
       // Select a pipeline with parameters
       const pipelineWithParams = newMockPipeline();
       pipelineWithParams.id = 'pipeline-with-params';
-      pipelineWithParams.parameters = [
-        { name: 'param-1', value: 'prefilled value 1' },
-        { name: 'param-2', value: 'prefilled value 2' },
-      ];
       getPipelineSpy.mockImplementationOnce(() => pipelineWithParams);
       tree.setState({ unconfirmedSelectedPipeline: pipelineWithParams });
       const instance = tree.instance() as TestNewRun;
@@ -1024,7 +1015,6 @@ describe('NewRun', () => {
       // Select a new pipeline with no parameters
       const noParamsPipeline = newMockPipeline();
       noParamsPipeline.id = 'no-params-pipeline';
-      noParamsPipeline.parameters = [];
       getPipelineSpy.mockImplementationOnce(() => noParamsPipeline);
       tree.setState({ unconfirmedSelectedPipeline: noParamsPipeline });
       instance._pipelineSelectorClosed(true);
@@ -1213,7 +1203,6 @@ describe('NewRun', () => {
         max_concurrency: '10',
         name: 'test run name',
         pipeline_spec: {
-          parameters: MOCK_PIPELINE.parameters,
           pipeline_id: MOCK_PIPELINE.id,
         },
         resource_references: [{

@@ -28,7 +28,7 @@ import RunUtils from '../lib/RunUtils';
 import ResourceSelector from './ResourceSelector';
 import TextField, { TextFieldProps } from '@material-ui/core/TextField';
 import Trigger from '../components/Trigger';
-import WorkflowParser from '../lib/WorkflowParser';
+// import WorkflowParser from '../lib/WorkflowParser';
 import { ApiExperiment } from '../apis/experiment';
 import { ApiPipeline } from '../apis/pipeline';
 import { ApiRun, ApiResourceReference, ApiRelationship, ApiResourceType, ApiRunDetail } from '../apis/run';
@@ -39,7 +39,7 @@ import { Page } from './Page';
 import { RoutePage, RouteParams, QUERY_PARAMS } from '../components/Router';
 import { ToolbarProps } from '../components/Toolbar';
 import { URLParser } from '../lib/URLParser';
-import { Workflow } from '../../../frontend/third_party/argo-ui/argo_template';
+// import { Workflow } from '../../../frontend/third_party/argo-ui/argo_template';
 import { classes, stylesheet } from 'typestyle';
 import { commonCss, padding, color } from '../Css';
 import { logger, errorToMessage } from '../lib/Utils';
@@ -297,9 +297,9 @@ class NewRun extends Page<{}, NewRunState> {
           {/* Run parameters form */}
           <div className={commonCss.header}>Run parameters</div>
           <div>{this._runParametersMessage(pipeline)}</div>
-          {pipeline && Array.isArray(pipeline.parameters) && !!pipeline.parameters.length && (
+          {pipeline && pipeline.default_version && Array.isArray(pipeline.default_version.parameters) && !!pipeline.default_version.parameters.length && (
             <div>
-              {pipeline.parameters.map((param, i) =>
+              {pipeline.default_version.parameters.map((param, i) =>
                 <TextField id={`newRunPipelineParam${i}`} key={i} variant='outlined'
                   label={param.name} value={param.value || ''}
                   onChange={(ev) => this._handleParamChange(i, ev.target.value || '')}
@@ -494,7 +494,7 @@ class NewRun extends Page<{}, NewRunState> {
     }
 
     let pipeline: ApiPipeline;
-    let workflow: Workflow;
+    // let workflow: Workflow;
     let pipelineFromRun: ApiPipeline;
     let usePipelineFromRun = false;
     let usePipelineFromRunLabel = '';
@@ -533,16 +533,16 @@ class NewRun extends Page<{}, NewRunState> {
       logger.error(originalRun.pipeline_runtime!.workflow_manifest);
       return;
     }
-    try {
-      workflow = JSON.parse(originalRun.pipeline_runtime!.workflow_manifest!) as Workflow;
-    } catch (err) {
-      await this.showPageError('Error: failed to parse the original run\'s runtime.', err);
-      logger.error(originalRun.pipeline_runtime!.workflow_manifest);
-      return;
-    }
+    // try {
+    //   workflow = JSON.parse(originalRun.pipeline_runtime!.workflow_manifest!) as Workflow;
+    // } catch (err) {
+    //   await this.showPageError('Error: failed to parse the original run\'s runtime.', err);
+    //   logger.error(originalRun.pipeline_runtime!.workflow_manifest);
+    //   return;
+    // }
 
     // Set pipeline parameter values from run's workflow
-    pipeline.parameters = WorkflowParser.getParameters(workflow);
+    // pipeline.default_version.parameters = WorkflowParser.getParameters(workflow);
 
     this.setStateSafe({
       pipeline,
@@ -558,7 +558,7 @@ class NewRun extends Page<{}, NewRunState> {
 
   private _runParametersMessage(selectedPipeline: ApiPipeline | undefined): string {
     if (selectedPipeline) {
-      if (selectedPipeline.parameters && selectedPipeline.parameters.length) {
+      if (selectedPipeline.default_version && selectedPipeline.default_version.parameters && selectedPipeline.default_version.parameters.length) {
         return 'Specify parameters required by the pipeline';
       } else {
         return 'This pipeline has no parameters';
@@ -570,7 +570,7 @@ class NewRun extends Page<{}, NewRunState> {
   private _start(): void {
     // TODO: This cannot currently be reached because _validate() is called everywhere and blocks
     // the button from being clicked without first having a pipeline.
-    if (!this.state.pipeline) {
+    if (!this.state.pipeline ||!this.state.pipeline.default_version) {
       this.showErrorDialog('Run creation failed', 'Cannot start run without pipeline');
       logger.error('Cannot start run without pipeline');
       return;
@@ -590,7 +590,7 @@ class NewRun extends Page<{}, NewRunState> {
       description: this.state.description,
       name: this.state.runName,
       pipeline_spec: {
-        parameters: this.state.pipeline.parameters,
+        parameters: this.state.pipeline.default_version.parameters,
         pipeline_id: this.state.usePipelineFromRun ? undefined : this.state.pipeline.id,
         workflow_manifest: this.state.usePipelineFromRun
           ? JSON.stringify(this.state.pipelineFromRun)
@@ -639,10 +639,10 @@ class NewRun extends Page<{}, NewRunState> {
 
   private _handleParamChange(index: number, value: string): void {
     const { pipeline } = this.state;
-    if (!pipeline || !pipeline.parameters) {
+    if (!pipeline || !pipeline.default_version|| !pipeline.default_version.parameters) {
       return;
     }
-    pipeline.parameters[index].value = value;
+    pipeline.default_version.parameters[index].value = value;
     this.setStateSafe({ pipeline });
   }
 

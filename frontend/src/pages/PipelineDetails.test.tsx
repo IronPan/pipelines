@@ -67,7 +67,6 @@ describe('PipelineDetails', () => {
       description: 'test pipeline description',
       id: 'test-pipeline-id',
       name: 'test pipeline',
-      parameters: [{ name: 'param1', value: 'value1' }],
     };
 
     testRun = {

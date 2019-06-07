@@ -21,6 +21,11 @@ import { StoragePath } from './WorkflowParser';
 
 const v1beta1Prefix = 'apis/v1beta1';
 
+
+export interface ListPipelineVersionRequest {
+  pipelineId: string;
+}
+
 export interface ListRequest {
   filter?: string;
   orderAscending?: boolean;

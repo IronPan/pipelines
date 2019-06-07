@@ -59,6 +59,7 @@ export enum QUERY_PARAMS {
 export enum RouteParams {
   experimentId = 'eid',
   pipelineId = 'pid',
+  pipelineVersionId = 'pvid',
   runId = 'rid',
 }
 
@@ -71,7 +72,7 @@ export const RoutePage = {
   NEW_EXPERIMENT: '/experiments/new',
   NEW_RUN: '/runs/new',
   PIPELINES: '/pipelines',
-  PIPELINE_DETAILS: `/pipelines/details/:${RouteParams.pipelineId}?`, // pipelineId is optional
+  PIPELINE_DETAILS: `/pipelines/details/:${RouteParams.pipelineId}/:${RouteParams.pipelineVersionId}`, // pipelineId is optional
   RECURRING_RUN: `/recurringrun/details/:${RouteParams.runId}`,
   RUNS: '/runs',
   RUN_DETAILS: `/runs/details/:${RouteParams.runId}`,
