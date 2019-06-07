@@ -21,7 +21,7 @@ steps:
   waitFor: ['PackagePipeline']
 - name: gcr.io/cloud-builders/kubectl
   entrypoint: '/bin/sh'
-  args: ['-c', 'pip3 install https://storage.googleapis.com/kfpci/kfp-0.1.22.tar.gz && python -c "import kfp; client=kfp.Client(namespace=\"kubeflow\"); client.create_pipeline_version(pipeline_id=\"foo\",name=\"$COMMIT_SHA\",url=\"https://storage.googleapis.com/$REPO_NAME/$COMMIT_SHA/resnet-train-pipeline.zip\")\"']
+  args: ['-c', 'pip3 install https://storage.googleapis.com/kfpci/kfp-0.1.22.tar.gz && python -c "import kfp; client=kfp.Client(namespace=\"kubeflow\"); client.create_pipeline_version(pipeline_id=\"foo\",name=\"$COMMIT_SHA\",url=\"https://storage.googleapis.com/$REPO_NAME/$COMMIT_SHA/resnet-train-pipeline.zip\")"']
   env:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
