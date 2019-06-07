@@ -32,7 +32,7 @@ import (
 	scheduledworkflow "github.com/kubeflow/pipelines/backend/src/crd/pkg/apis/scheduledworkflow/v1beta1"
 	scheduledworkflowclient "github.com/kubeflow/pipelines/backend/src/crd/pkg/client/clientset/versioned/typed/scheduledworkflow/v1beta1"
 	"github.com/pkg/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -96,7 +96,7 @@ func (r *ResourceManager) GetExperiment(experimentId string) (*model.Experiment,
 }
 
 func (r *ResourceManager) ListExperiments(opts *list.Options) (
-	experiments []*model.Experiment, total_size int, nextPageToken string, err error) {
+		experiments []*model.Experiment, total_size int, nextPageToken string, err error) {
 	return r.experimentStore.ListExperiments(opts)
 }
 
@@ -109,7 +109,7 @@ func (r *ResourceManager) DeleteExperiment(experimentID string) error {
 }
 
 func (r *ResourceManager) ListPipelines(opts *list.Options) (
-	pipelines []*model.Pipeline, total_size int, nextPageToken string, err error) {
+		pipelines []*model.Pipeline, total_size int, nextPageToken string, err error) {
 	return r.pipelineStore.ListPipelines(opts)
 }
 
@@ -125,10 +125,10 @@ func (r *ResourceManager) DeletePipeline(pipelineId string) error {
 	return nil
 }
 
-func(r *ResourceManager)  CreatePipeline2(name string, description string) (*model.Pipeline, error){
+func (r *ResourceManager) CreatePipeline2(name string, description string) (*model.Pipeline, error) {
 	// Create an entry with status of creating the pipeline
 	// TODO for now always set status to ready. In future, we might not need pipeline status
-	pipeline := &model.Pipeline{Name: name, Description: description, Status:model.PipelineReady}
+	pipeline := &model.Pipeline{Name: name, Description: description, Status: model.PipelineReady}
 	newPipeline, err := r.pipelineStore.CreatePipeline(pipeline)
 	if err != nil {
 		return nil, util.Wrap(err, "Create pipeline failed")
@@ -164,10 +164,16 @@ func (r *ResourceManager) CreatePipelineVersion(apiVersion *api.PipelineVersion,
 	if err != nil {
 		return nil, util.Wrap(err, "Create pipeline failed")
 	}
+	glog.Infof("start update pipeline default version")
+	err = r.pipelineStore.UpdatePipelineDefaultVersion(pipelineId, version.UUID)
+	if err != nil {
+		return nil, util.Wrap(err, "Failed to update pipeline default version.")
+	}
+
 	return newPipelineVersion, nil
 }
 
-func (r *ResourceManager) GetPipelineVersion(pipelineId string, versionId string)(*model.PipelineVersion, error){
+func (r *ResourceManager) GetPipelineVersion(pipelineId string, versionId string) (*model.PipelineVersion, error) {
 	return r.pipelineStore.GetPipelineVersion(pipelineId, versionId)
 }
 
@@ -263,7 +269,7 @@ func (r *ResourceManager) GetRun(runId string) (*model.RunDetail, error) {
 }
 
 func (r *ResourceManager) ListRuns(filterContext *common.FilterContext,
-	opts *list.Options) (runs []*model.Run, total_size int, nextPageToken string, err error) {
+		opts *list.Options) (runs []*model.Run, total_size int, nextPageToken string, err error) {
 	return r.runStore.ListRuns(filterContext, opts)
 }
 
@@ -294,7 +300,7 @@ func (r *ResourceManager) DeleteRun(runID string) error {
 }
 
 func (r *ResourceManager) ListJobs(filterContext *common.FilterContext,
-	opts *list.Options) (jobs []*model.Job, total_size int, nextPageToken string, err error) {
+		opts *list.Options) (jobs []*model.Job, total_size int, nextPageToken string, err error) {
 	return r.jobStore.ListJobs(filterContext, opts)
 }
 

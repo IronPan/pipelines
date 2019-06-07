@@ -32,6 +32,7 @@ type PipelineStoreInterface interface {
 	DeletePipeline(pipelineId string) error
 	CreatePipeline(*model.Pipeline) (*model.Pipeline, error)
 	UpdatePipelineStatus(string, model.PipelineStatus) error
+	UpdatePipelineDefaultVersion(string, string) error
 
 	CreatePipelineVersion(*model.PipelineVersion) (*model.PipelineVersion, error)
 	GetPipelineVersion(pipelineId string, versionId string) (*model.PipelineVersion, error)
@@ -121,7 +122,7 @@ func (s *PipelineStore) ListPipelines(opts *list.Options) ([]*model.Pipeline, in
 func (s *PipelineStore) scanPipelineRows(rows *sql.Rows) ([]*model.Pipeline, error) {
 	var pipelines []*model.Pipeline
 	for rows.Next() {
-		var uuid, name, description, defaultVersionId  string
+		var uuid, name, description, defaultVersionId string
 		var versionUuid, versionName, versionParameters,
 		versionPipelineId, versionRepoName, versionCommitSha sql.NullString
 		var createdAtInSec int64
@@ -256,6 +257,24 @@ func (s *PipelineStore) CreatePipeline(p *model.Pipeline) (*model.Pipeline, erro
 			err.Error())
 	}
 	return &newPipeline, nil
+}
+
+func (s *PipelineStore) UpdatePipelineDefaultVersion(pipelineId string, versionId string) error {
+	sql, args, err := sq.
+		Update("pipelines").
+		SetMap(sq.Eq{"DefaultVersionId": versionId}).
+		Where(sq.Eq{"UUID": pipelineId}).
+		ToSql()
+	if err != nil {
+		return util.NewInternalServerError(err, "Failed to create query to update the pipeline default version: %s", err.Error())
+	}
+	_, err = s.db.Exec(sql, args...)
+	if err != nil {
+		return util.NewInternalServerError(err, "Failed to update the pipeline default version: %s", err.Error())
+	}
+	glog.Infof("done update pipeline default version. pipeline %s version %s", pipelineId, versionId)
+
+	return nil
 }
 
 func (s *PipelineStore) UpdatePipelineStatus(id string, status model.PipelineStatus) error {
