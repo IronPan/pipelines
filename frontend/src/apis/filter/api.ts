@@ -86,7 +86,7 @@ export class RequiredError extends Error {
 export interface ApiFilter {
     /**
      * All predicates are AND-ed when this filter is applied.
-     * @type {Array<ApiPredicate>}
+     * @type {Array&lt;ApiPredicate&gt;}
      * @memberof ApiFilter
      */
     predicates?: Array<ApiPredicate>;
@@ -100,7 +100,7 @@ export interface ApiFilter {
 export interface ApiIntValues {
     /**
      * 
-     * @type {Array<number>}
+     * @type {Array&lt;number&gt;}
      * @memberof ApiIntValues
      */
     values?: Array<number>;
@@ -114,7 +114,7 @@ export interface ApiIntValues {
 export interface ApiLongValues {
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array&lt;string&gt;}
      * @memberof ApiLongValues
      */
     values?: Array<string>;
@@ -190,7 +190,7 @@ export interface ApiPredicate {
 export interface ApiStringValues {
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array&lt;string&gt;}
      * @memberof ApiStringValues
      */
     values?: Array<string>;

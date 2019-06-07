@@ -118,7 +118,7 @@ export interface ApiExperiment {
 export interface ApiListExperimentsResponse {
     /**
      * A list of experiments returned.
-     * @type {Array<ApiExperiment>}
+     * @type {Array&lt;ApiExperiment&gt;}
      * @memberof ApiListExperimentsResponse
      */
     experiments?: Array<ApiExperiment>;
@@ -156,7 +156,7 @@ export interface ApiStatus {
     code?: number;
     /**
      * 
-     * @type {Array<ProtobufAny>}
+     * @type {Array&lt;ProtobufAny&gt;}
      * @memberof ApiStatus
      */
     details?: Array<ProtobufAny>;
@@ -383,7 +383,7 @@ export const ExperimentServiceApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteExperiment(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
+        deleteExperiment(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
             const localVarFetchArgs = ExperimentServiceApiFetchParamCreator(configuration).deleteExperiment(id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -494,7 +494,7 @@ export const ExperimentServiceApiFactory = function (configuration?: Configurati
 export class ExperimentServiceApi extends BaseAPI {
     /**
      * 
-     * @param {ApiExperiment} body The experiment to be created
+     * @param {} body The experiment to be created
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ExperimentServiceApi
@@ -505,7 +505,7 @@ export class ExperimentServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} id The ID of the experiment to be deleted.
+     * @param {} id The ID of the experiment to be deleted.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ExperimentServiceApi
@@ -516,7 +516,7 @@ export class ExperimentServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} id The ID of the experiment to be retrieved
+     * @param {} id The ID of the experiment to be retrieved
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ExperimentServiceApi
@@ -527,10 +527,10 @@ export class ExperimentServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} [page_token] 
-     * @param {number} [page_size] 
-     * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-     * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
+     * @param {} [page_token] 
+     * @param {} [page_size] 
+     * @param {} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
+     * @param {} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ExperimentServiceApi

@@ -120,7 +120,7 @@ export interface ApiGetTemplateResponse {
 export interface ApiListPipelineVersionsResponse {
     /**
      * 
-     * @type {Array<ApiPipelineVersion>}
+     * @type {Array&lt;ApiPipelineVersion&gt;}
      * @memberof ApiListPipelineVersionsResponse
      */
     versions?: Array<ApiPipelineVersion>;
@@ -134,7 +134,7 @@ export interface ApiListPipelineVersionsResponse {
 export interface ApiListPipelinesResponse {
     /**
      * 
-     * @type {Array<ApiPipeline>}
+     * @type {Array&lt;ApiPipeline&gt;}
      * @memberof ApiListPipelinesResponse
      */
     pipelines?: Array<ApiPipeline>;
@@ -248,7 +248,7 @@ export interface ApiPipelineVersion {
     created_at?: Date;
     /**
      * Output. The input parameters for this pipeline.
-     * @type {Array<ApiParameter>}
+     * @type {Array&lt;ApiParameter&gt;}
      * @memberof ApiPipelineVersion
      */
     parameters?: Array<ApiParameter>;
@@ -286,7 +286,7 @@ export interface ApiStatus {
     code?: number;
     /**
      * 
-     * @type {Array<ProtobufAny>}
+     * @type {Array&lt;ProtobufAny&gt;}
      * @memberof ApiStatus
      */
     details?: Array<ProtobufAny>;
@@ -748,7 +748,7 @@ export const PipelineServiceApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deletePipeline(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ERRORUNKNOWN> {
+        deletePipeline(id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<any> {
             const localVarFetchArgs = PipelineServiceApiFetchParamCreator(configuration).deletePipeline(id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
@@ -983,7 +983,7 @@ export const PipelineServiceApiFactory = function (configuration?: Configuration
 export class PipelineServiceApi extends BaseAPI {
     /**
      * 
-     * @param {ApiPipeline} body 
+     * @param {} body 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
@@ -994,8 +994,8 @@ export class PipelineServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} pipeline_id 
-     * @param {ApiPipelineVersion} body 
+     * @param {} pipeline_id 
+     * @param {} body 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
@@ -1006,7 +1006,7 @@ export class PipelineServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} id 
+     * @param {} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
@@ -1017,7 +1017,7 @@ export class PipelineServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} id 
+     * @param {} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
@@ -1028,8 +1028,8 @@ export class PipelineServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} pipeline_id 
-     * @param {string} version_id 
+     * @param {} pipeline_id 
+     * @param {} version_id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
@@ -1040,8 +1040,8 @@ export class PipelineServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} pipeline_id 
-     * @param {string} version_id 
+     * @param {} pipeline_id 
+     * @param {} version_id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
@@ -1053,7 +1053,7 @@ export class PipelineServiceApi extends BaseAPI {
     /**
      * 
      * @summary GetTemplate will get the default template for a given pipeline
-     * @param {string} id 
+     * @param {} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
@@ -1064,7 +1064,7 @@ export class PipelineServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} pipeline_id 
+     * @param {} pipeline_id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
@@ -1075,10 +1075,10 @@ export class PipelineServiceApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} [page_token] 
-     * @param {number} [page_size] 
-     * @param {string} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
-     * @param {string} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
+     * @param {} [page_token] 
+     * @param {} [page_size] 
+     * @param {} [sort_by] Can be format of \&quot;field_name\&quot;, \&quot;field_name asc\&quot; or \&quot;field_name des\&quot; Ascending by default.
+     * @param {} [filter] A base-64 encoded, JSON-serialized Filter protocol buffer (see filter.proto).
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
