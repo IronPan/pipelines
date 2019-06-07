@@ -29,7 +29,7 @@ import RunUtils from '../lib/RunUtils';
 import SidePanel from '../components/SidePanel';
 import StaticNodeDetails from '../components/StaticNodeDetails';
 import { ApiExperiment } from '../apis/experiment';
-import { ApiPipeline, ApiGetTemplateResponse, ApiVersion } from '../apis/pipeline';
+import { ApiPipeline, ApiGetTemplateResponse } from '../apis/pipeline';
 import { Apis } from '../lib/Apis';
 import { Page } from './Page';
 import { RoutePage, RouteParams, QUERY_PARAMS } from '../components/Router';
