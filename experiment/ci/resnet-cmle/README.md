@@ -1,4 +1,4 @@
-# Continuous Integration For Kubeflow Pipelines
+# Continuous Integration For Kubeflow Pipelines 
 
 In this sample we will setup a Continuous Integration environment for developing a Kubeflow Pipeline, using [Google Cloud Build](https://cloud.google.com/cloud-build/)
 
