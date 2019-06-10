@@ -199,7 +199,11 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
                             </Select>
                           </FormControl>
                         </form>
-                        <div className={css.summaryKey}><a href={''}>Version source</a></div>
+                        <div className={css.summaryKey}>
+                          <a href={this._createVersionUrl()} target='_blank'>
+                            Version source
+                          </a>
+                        </div>
                       </React.Fragment>
                     )}
                     <div className={css.summaryKey}>Uploaded on</div>
@@ -263,7 +267,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
       const selectedVersion = (this.state.versions || []).find(v => v.id === versionId);
       const selectedVersionPipelineTemplate = await this._getTemplateString(this.state.pipeline.id!, versionId);
       // TODO(rjbauer): remove last history entry
-      this.props.history.push({
+      this.props.history.replace({
         pathname: `/pipelines/details/${this.state.pipeline.id}/version/${versionId}`,
       });
       this.setStateSafe({
@@ -418,6 +422,14 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
       }
     }
     return null;
+  }
+
+  private _createVersionUrl(): string {
+    // TODO(rjbauer): verify how much we can assume to always be defined here.
+    const source = this.state.selectedVersion!.code_source!;
+    // TODO(rjbauer): handle non-github cases
+    const repoParts = source.repo_name!.split('_');
+    return `https://github.com/${repoParts[1]}/${repoParts[2]}/tree/${source.commit_sha}`;
   }
 
   private _deleteCallback(_: string[], success: boolean): void {
