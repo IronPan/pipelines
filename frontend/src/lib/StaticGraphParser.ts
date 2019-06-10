@@ -194,7 +194,7 @@ export function createGraph(workflow: Workflow): dagre.graphlib.Graph {
   graph.setGraph({});
   graph.setDefaultEdgeLabel(() => ({}));
 
-  if (!workflow.spec || !workflow.spec.templates) {
+  if (!workflow || !workflow.spec || !workflow.spec.templates) {
     throw new Error('Could not generate graph. Provided Pipeline had no components.');
   }
 

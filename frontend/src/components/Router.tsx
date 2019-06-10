@@ -72,7 +72,7 @@ export const RoutePage = {
   NEW_EXPERIMENT: '/experiments/new',
   NEW_RUN: '/runs/new',
   PIPELINES: '/pipelines',
-  PIPELINE_DETAILS: `/pipelines/details/:${RouteParams.pipelineId}/versions/:${RouteParams.pipelineVersionId}`, // pipelineId is optional
+  PIPELINE_DETAILS: `/pipelines/details/:${RouteParams.pipelineId}/version/:${RouteParams.pipelineVersionId}`, // pipelineId is optional
   RECURRING_RUN: `/recurringrun/details/:${RouteParams.runId}`,
   RUNS: '/runs',
   RUN_DETAILS: `/runs/details/:${RouteParams.runId}`,

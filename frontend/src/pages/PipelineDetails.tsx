@@ -36,7 +36,6 @@ import { RoutePage, RouteParams, QUERY_PARAMS } from '../components/Router';
 import { ToolbarProps, ToolbarActionConfig } from '../components/Toolbar';
 import { URLParser } from '../lib/URLParser';
 import { UnControlled as CodeMirror } from 'react-codemirror2';
-import { Workflow } from '../../third_party/argo-ui/argo_template';
 import { classes, stylesheet } from 'typestyle';
 import { color, commonCss, padding, fontsize, fonts, zIndex } from '../Css';
 import { logger, formatDateString } from '../lib/Utils';
@@ -46,14 +45,13 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 
 interface PipelineDetailsState {
-  graph?: dagre.graphlib.Graph;
+  graph: dagre.graphlib.Graph | null;
   pipeline: ApiPipeline | null;
   selectedNodeId: string;
   selectedNodeInfo: JSX.Element | null;
   selectedTab: number;
   selectedVersion?: ApiPipelineVersion;
   summaryShown: boolean;
-  template?: Workflow;
   templateString?: string;
   versions: ApiPipelineVersion[];
 }
@@ -110,6 +108,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     super(props);
 
     this.state = {
+      graph: null,
       pipeline: null,
       selectedNodeId: '',
       selectedNodeInfo: null,
@@ -262,8 +261,16 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
   public async handleVersionSelected(versionId: string): Promise<void> {
     if (this.state.pipeline) {
       const selectedVersion = (this.state.versions || []).find(v => v.id === versionId);
-      const selectedVersionPipelineTemplate = await Apis.pipelineServiceApi.getPipelineVersionTemplate(this.state.pipeline.id!, versionId);
-      this.setStateSafe({ selectedVersion, templateString: selectedVersionPipelineTemplate.template });
+      const selectedVersionPipelineTemplate = await this._getTemplateString(this.state.pipeline.id!, versionId);
+      // TODO(rjbauer): remove last history entry
+      this.props.history.push({
+        pathname: `/pipelines/details/${this.state.pipeline.id}/version/${versionId}`,
+      });
+      this.setStateSafe({
+        graph: await this._createGraph(selectedVersionPipelineTemplate),
+        selectedVersion,
+        templateString: selectedVersionPipelineTemplate
+      });
     }
   }
 
@@ -282,7 +289,6 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     let pipeline: ApiPipeline | null = null;
     let version: ApiPipelineVersion | null = null;
     let templateString = '';
-    let template: Workflow | undefined;
     let breadcrumbs: Array<{ displayName: string, href: string }> = [];
     const toolbarActions = [...this.props.toolbarProps.actions];
     let pageTitle = '';
@@ -345,17 +351,15 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
       // if fromRunId is not specified, then we have a full pipeline
       const pipelineId = this.props.match.params[RouteParams.pipelineId];
       const versionId = this.props.match.params[RouteParams.pipelineVersionId];
-      let templateResponse: ApiGetTemplateResponse;
 
       try {
         pipeline = await Apis.pipelineServiceApi.getPipeline(pipelineId);
-        if (versionId){
+
+        // TODO(rjbauer): this should be in its own try-catch
+        if (versionId) {
           version = await Apis.pipelineServiceApi.getPipelineVersion(pipelineId, versionId);
         }
-        // tslint:disable-next-line:no-console
-        console.log('pipeline:', pipeline);
         pageTitle = pipeline.name!;
-        // TODO(rjbauer): we need to save the users selected version. probably via query params
         selectedVersion = versionId ? version! : pipeline.default_version;
       } catch (err) {
         await this.showPageError('Cannot retrieve pipeline details.', err);
@@ -371,20 +375,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
         return;
       }
 
-      try {
-        // TODO(rjbauer): this should not be always using default.
-        if (versionId){
-          templateResponse = await Apis.pipelineServiceApi.getPipelineVersionTemplate(pipelineId, versionId);
-        }
-        else {
-          templateResponse = await Apis.pipelineServiceApi.getTemplate(pipelineId, pipeline.default_version!.id!);
-        }
-        templateString = templateResponse.template || '';
-      } catch (err) {
-        await this.showPageError('Cannot retrieve pipeline template.', err);
-        logger.error('Cannot retrieve pipeline details.', err);
-        return;
-      }
+      templateString = await this._getTemplateString(pipelineId, versionId);
 
       breadcrumbs = [{ displayName: 'Pipelines', href: RoutePage.PIPELINES }];
       toolbarActions[0].disabled = false;
@@ -392,24 +383,41 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
 
     this.props.updateToolbar({ breadcrumbs, actions: toolbarActions, pageTitle });
 
-    let g: dagre.graphlib.Graph | undefined;
-    try {
-      template = JsYaml.safeLoad(templateString);
-      // tslint:disable-next-line:no-console
-      console.log('template:', template);
-      g = StaticGraphParser.createGraph(template!);
-    } catch (err) {
-      await this.showPageError('Error: failed to generate Pipeline graph.', err);
-    }
-
     this.setStateSafe({
-      graph: g,
+      graph: await this._createGraph(templateString),
       pipeline,
       selectedVersion,
-      template,
       templateString,
       versions,
     });
+  }
+
+  private async _getTemplateString(pipelineId: string, versionId: string): Promise<string> {
+    try {
+      let templateResponse: ApiGetTemplateResponse;
+      if (versionId) {
+        templateResponse = await Apis.pipelineServiceApi.getPipelineVersionTemplate(pipelineId, versionId);
+      } else {
+        templateResponse = await Apis.pipelineServiceApi.getTemplate(pipelineId);
+      }
+      return templateResponse.template || '';
+    } catch (err) {
+      await this.showPageError('Cannot retrieve pipeline template.', err);
+      logger.error('Cannot retrieve pipeline details.', err);
+    }
+    return '';
+  }
+
+  private async _createGraph(templateString: string): Promise<dagre.graphlib.Graph | null> {
+    if (templateString) {
+      try {
+        const template = JsYaml.safeLoad(templateString);
+        return StaticGraphParser.createGraph(template!);
+      } catch (err) {
+        await this.showPageError('Error: failed to generate Pipeline graph.', err);
+      }
+    }
+    return null;
   }
 
   private _deleteCallback(_: string[], success: boolean): void {
