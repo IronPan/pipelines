@@ -28,11 +28,7 @@ steps:
                 python3 -c "
                   import kfp; 
                   client=kfp.Client(namespace=\"kubeflow\"); 
-                  client.create_pipeline_version(
-                       pipeline_id=\"d564d407-efa9-4c84-8165-0c5e0468b6f9\", 
-                       name=\"$COMMIT_SHA\",
-                       repo_name=\"$REPO_NAME\",
-                       commit_sha=\"$COMMIT_SHA\", url=\"https://storage.googleapis.com/$REPO_NAME/$COMMIT_SHA/resnet-train-pipeline.zip\")"']
+                  client.create_pipeline_version(pipeline_id=\"d564d407-efa9-4c84-8165-0c5e0468b6f9\", name=\"$COMMIT_SHA\", repo_name=\"$REPO_NAME\", commit_sha=\"$COMMIT_SHA\", url=\"https://storage.googleapis.com/$REPO_NAME/$COMMIT_SHA/resnet-train-pipeline.zip\")"']
   env:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
