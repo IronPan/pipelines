@@ -112,7 +112,21 @@ class PipelineVersionList extends React.PureComponent<PipelineVersionListProps, 
     if (this.props.pipelineId) {
       try {
         const response = await Apis.pipelineServiceApi.listPipelineVersions(this.props.pipelineId);
-        versions = response.versions || [];
+        versions = (response.versions || []).sort((a, b) => {
+          if (!b.created_at) {
+            return -1;
+          }
+          if (!a.created_at) {
+            return 1;
+          }
+          if (a.created_at > b.created_at) {
+            return -1;
+          }
+          if (a.created_at < b.created_at) {
+            return 1;
+          }
+          return 0;
+        });
       } catch (err) {
         const error = new Error(await errorToMessage(err));
         this.props.onError('Error: failed to fetch runs.', error);
