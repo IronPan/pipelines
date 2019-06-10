@@ -33,6 +33,5 @@ steps:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
 
-
 substitutions:
   _CODE_PATH: /workspace/experiment/ci/resnet-cmle
