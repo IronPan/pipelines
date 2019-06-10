@@ -19,7 +19,7 @@ import * as React from 'react';
 import {Link, RouteComponentProps} from 'react-router-dom';
 import {ApiPipelineVersion} from '../apis/pipeline';
 import {Apis, ListRequest, RunSortKeys} from '../lib/Apis';
-import {errorToMessage, formatDateString} from '../lib/Utils';
+import {errorToMessage, formatDateString, getTimeInSec} from '../lib/Utils';
 import {RoutePage, RouteParams} from '../components/Router';
 import {commonCss} from '../Css';
 
@@ -51,8 +51,19 @@ class PipelineVersionList extends React.PureComponent<PipelineVersionListProps, 
 
 
   public _nameCustomRenderer: React.FC<CustomRendererProps<string>> = (props: CustomRendererProps<string>) => {
-    return <Link className={commonCss.link} onClick={(e) => e.stopPropagation()}
-                 to={RoutePage.PIPELINE_DETAILS.replace(':' + RouteParams.pipelineId, props.id)}>{props.value}</Link>;
+    if (this.props.pipelineId) {
+      return <Link className={commonCss.link}
+                   onClick={(e) => e.stopPropagation()}
+                   to={RoutePage.PIPELINE_DETAILS.
+                   replace(':' + RouteParams.pipelineId, this.props.pipelineId).
+                   replace(':' + RouteParams.pipelineVersionId, props.id)}>{props.value}</Link>;
+    }
+    else {
+      return <Link className={commonCss.link}
+                   onClick={(e) => e.stopPropagation()}
+                   to={RoutePage.PIPELINE_DETAILS.
+                   replace(':' + RouteParams.pipelineVersionId, props.id)}>{props.value}</Link>;
+    }
   }
 
   public render(): JSX.Element {
@@ -62,9 +73,12 @@ class PipelineVersionList extends React.PureComponent<PipelineVersionListProps, 
         flex: 2,
         label: 'Version name',
       },
-      { label: 'Start time', flex: 1},
+      {label: 'Start time', flex: 1},
     ];
 
+    this.state.pipelineVersions.sort((a, b) => {
+      return getTimeInSec(b.created_at) - getTimeInSec(a.created_at);
+    });
 
     const rows: Row[] = this.state.pipelineVersions.map(r => {
       const row = {

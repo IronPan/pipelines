@@ -39,6 +39,14 @@ export function formatDateString(date: Date | string | undefined): string {
   }
 }
 
+export function getTimeInSec(date: Date | string | undefined): number {
+  if (typeof date === 'string') {
+    return new Date(date).getTime();
+  } else {
+    return date ? date.getTime() : 0;
+  }
+}
+
 // TODO: add tests
 export async function errorToMessage(error: any): Promise<string> {
   if (error instanceof Error) {

@@ -280,6 +280,7 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     const fromRunId = new URLParser(this.props).get(QUERY_PARAMS.fromRunId);
 
     let pipeline: ApiPipeline | null = null;
+    let version: ApiPipelineVersion | null = null;
     let templateString = '';
     let template: Workflow | undefined;
     let breadcrumbs: Array<{ displayName: string, href: string }> = [];
@@ -343,15 +344,19 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     } else {
       // if fromRunId is not specified, then we have a full pipeline
       const pipelineId = this.props.match.params[RouteParams.pipelineId];
+      const versionId = this.props.match.params[RouteParams.pipelineVersionId];
       let templateResponse: ApiGetTemplateResponse;
 
       try {
         pipeline = await Apis.pipelineServiceApi.getPipeline(pipelineId);
+        if (versionId){
+          version = await Apis.pipelineServiceApi.getPipelineVersion(pipelineId, versionId);
+        }
         // tslint:disable-next-line:no-console
         console.log('pipeline:', pipeline);
         pageTitle = pipeline.name!;
         // TODO(rjbauer): we need to save the users selected version. probably via query params
-        selectedVersion = pipeline.default_version;
+        selectedVersion = versionId ? version! : pipeline.default_version;
       } catch (err) {
         await this.showPageError('Cannot retrieve pipeline details.', err);
         logger.error('Cannot retrieve pipeline details.', err);
@@ -368,7 +373,12 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
 
       try {
         // TODO(rjbauer): this should not be always using default.
-        templateResponse = await Apis.pipelineServiceApi.getTemplate(pipelineId, pipeline.default_version!.id!);
+        if (versionId){
+          templateResponse = await Apis.pipelineServiceApi.getPipelineVersionTemplate(pipelineId, versionId);
+        }
+        else {
+          templateResponse = await Apis.pipelineServiceApi.getTemplate(pipelineId, pipeline.default_version!.id!);
+        }
         templateString = templateResponse.template || '';
       } catch (err) {
         await this.showPageError('Cannot retrieve pipeline template.', err);
