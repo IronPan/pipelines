@@ -28,7 +28,7 @@ The pipeline consists of two steps
 - [x] cloud build step to upload package to KFP endpoint
 
 - [x] add pipeline version API to KFP backend
-- [ ] add pipeline version view to KFP UI
+- [x] add pipeline version view to KFP UI
 
 - [ ] add hello world CI sample to build docker image
 - [ ] add TFX sample
