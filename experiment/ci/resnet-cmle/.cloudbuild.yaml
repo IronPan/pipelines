@@ -29,8 +29,18 @@ steps:
   env:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
+- name: gcr.io/ml-pipeline-dogfood/kfptool
+  entrypoint: '/bin/sh'
+  args: ['-c', '/builder/kubectl.bash; 
+                python3 -c "import kfp; client=kfp.Client(namespace=\"$_NAMESPACE\"); \
+                           exp = client.create_experiment(name=\"$_EXPERIMENT_NAME\"); params = {'output': 'gs://kfpci-resnet', 'project-id': '$PROJECT_ID'}; \
+                           client.run_pipeline(exp.id, \"$COMMIT_SHA\", '/workspace/resnet-train-pipeline.zip', params)"']
+  env:
+  - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
 
 substitutions:
   _CODE_PATH: /workspace/experiment/ci/resnet-cmle
-  _PIPELINE_ID: 6a1d8e88-8c0a-4be7-babc-8a15df2cee10
   _NAMESPACE: kubeflow
+  _PIPELINE_ID: 6a1d8e88-8c0a-4be7-babc-8a15df2cee10
+  _EXPERIMENT_NAME: kfpcd
