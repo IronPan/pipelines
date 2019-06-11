@@ -124,8 +124,13 @@ class PipelineList extends Page<{}, PipelineListState> {
 
   private _getExpandedPipelineComponent(rowIndex: number): JSX.Element {
     const pipeline = this.state.displayPipelines[rowIndex];
-    return <PipelineVersionList pipelineId={pipeline.id} onError={() => null} {...this.props} selectedIds={this.state.selectedIds} noFilterBox={true}
-                    onSelectionChange={this._selectionChanged.bind(this)} disableSorting={true} />;
+    return (
+      <PipelineVersionList pipelineId={pipeline.id} onError={() => null}
+        {...this.props} selectedIds={this.state.selectedIds} noFilterBox={true}
+        onSelectionChange={this._selectionChanged.bind(this)} disableSorting={true}
+        disablePaging={true}
+      />
+    );
   }
 
   private async _reload(request: ListRequest): Promise<string> {

@@ -51,8 +51,19 @@ class PipelineVersionList extends React.PureComponent<PipelineVersionListProps, 
 
 
   public _nameCustomRenderer: React.FC<CustomRendererProps<string>> = (props: CustomRendererProps<string>) => {
-    return <Link className={commonCss.link} onClick={(e) => e.stopPropagation()}
-                 to={RoutePage.PIPELINE_DETAILS.replace(':' + RouteParams.pipelineId, props.id)}>{props.value}</Link>;
+    if (this.props.pipelineId) {
+      return <Link className={commonCss.link}
+                   onClick={(e) => e.stopPropagation()}
+                   to={RoutePage.PIPELINE_DETAILS.
+                   replace(':' + RouteParams.pipelineId, this.props.pipelineId).
+                   replace(':' + RouteParams.pipelineVersionId, props.id)}>{props.value}</Link>;
+    }
+    else {
+      return <Link className={commonCss.link}
+                   onClick={(e) => e.stopPropagation()}
+                   to={RoutePage.PIPELINE_DETAILS.
+                   replace(':' + RouteParams.pipelineVersionId, props.id)}>{props.value}</Link>;
+    }
   }
 
   public render(): JSX.Element {
@@ -62,9 +73,8 @@ class PipelineVersionList extends React.PureComponent<PipelineVersionListProps, 
         flex: 2,
         label: 'Version name',
       },
-      { label: 'Start time', flex: 1},
+      {label: 'Start time', flex: 1},
     ];
-
 
     const rows: Row[] = this.state.pipelineVersions.map(r => {
       const row = {
@@ -98,7 +108,21 @@ class PipelineVersionList extends React.PureComponent<PipelineVersionListProps, 
     if (this.props.pipelineId) {
       try {
         const response = await Apis.pipelineServiceApi.listPipelineVersions(this.props.pipelineId);
-        versions = response.versions || [];
+        versions = (response.versions || []).sort((a, b) => {
+          if (!b.created_at) {
+            return -1;
+          }
+          if (!a.created_at) {
+            return 1;
+          }
+          if (a.created_at > b.created_at) {
+            return -1;
+          }
+          if (a.created_at < b.created_at) {
+            return 1;
+          }
+          return 0;
+        });
       } catch (err) {
         const error = new Error(await errorToMessage(err));
         this.props.onError('Error: failed to fetch runs.', error);

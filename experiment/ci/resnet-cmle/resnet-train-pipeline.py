@@ -64,7 +64,7 @@ def resnet_train_op(project_id, data_dir, output: 'GcsUri', region: 'GcpRegion',
         region='us-central1',
         python_module='trainer.resnet_main',
         package_uris=json.dumps(
-            [os.path.join(args.package_base_dir, 'trainer/trainer.tar.gz')]),
+            [os.path.join(args.package_base_dir, 'train/train.tar.gz')]),
         job_dir=output,
         args=json.dumps([
             '--data_dir', str(data_dir),

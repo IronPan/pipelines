@@ -235,11 +235,19 @@ message PipelineVersion {
 }
 
 message CodeSource {
+  oneof {
+    github_repo = 1;
+
+
+  }
+}
+
+message github_repo {
   string repo_name = 1;
 
   string commit_sha = 2;
-}
 
+}
 // change
 // upload pipeline: from s.resourceManager.CreatePipeline to s.resourceManager.CreatePipeline + s.resourceManager.CreateVersion
 // create pipeline: restore pipeline url in body. remove later. it creates a pipeline and verrsion underneath

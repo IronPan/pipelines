@@ -577,22 +577,16 @@ export const PipelineServiceApiFetchParamCreator = function (configuration?: Con
          *
          * @summary GetTemplate will get the default template for a given pipeline
          * @param {string} pipeline_id
-         * @param {string} version_id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplate(pipeline_id: string, version_id: string, options: any = {}): FetchArgs {
+        getTemplate(pipeline_id: string, options: any = {}): FetchArgs {
             // verify required parameter 'pipeline_id' is not null or undefined
             if (pipeline_id === null || pipeline_id === undefined) {
                 throw new RequiredError('pipeline_id','Required parameter pipeline_id was null or undefined when calling getTemplate.');
             }
-            // verify required parameter 'version_id' is not null or undefined
-            if (version_id === null || version_id === undefined) {
-                throw new RequiredError('version_id','Required parameter version_id was null or undefined when calling getTemplate.');
-            }
             const localVarPath = `/apis/v1beta1/pipelines/{id}/versions/{version_id}/templates`
-                .replace(`{${"pipeline_id"}}`, encodeURIComponent(String(pipeline_id)))
-                .replace(`{${"version_id"}}`, encodeURIComponent(String(version_id)));
+                .replace(`{${"pipeline_id"}}`, encodeURIComponent(String(pipeline_id)));
             const localVarUrlObj = url.parse(localVarPath, true);
             const localVarRequestOptions = Object.assign({ method: 'GET' }, options);
             const localVarHeaderParameter = {} as any;
@@ -826,12 +820,11 @@ export const PipelineServiceApiFp = function(configuration?: Configuration) {
          *
          * @summary GetTemplate will get the default template for a given pipeline
          * @param {string} pipeline_id
-         * @param {string} version_id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplate(pipeline_id: string, version_id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ApiGetTemplateResponse> {
-            const localVarFetchArgs = PipelineServiceApiFetchParamCreator(configuration).getTemplate(pipeline_id, version_id, options);
+        getTemplate(pipeline_id: string, options?: any): (fetch?: FetchAPI, basePath?: string) => Promise<ApiGetTemplateResponse> {
+            const localVarFetchArgs = PipelineServiceApiFetchParamCreator(configuration).getTemplate(pipeline_id, options);
             return (fetch: FetchAPI = portableFetch, basePath: string = BASE_PATH) => {
                 return fetch(basePath + localVarFetchArgs.url, localVarFetchArgs.options).then((response) => {
                     if (response.status >= 200 && response.status < 300) {
@@ -951,12 +944,11 @@ export const PipelineServiceApiFactory = function (configuration?: Configuration
          *
          * @summary GetTemplate will get the default template for a given pipeline
          * @param {string} pipeline_id
-         * @param {string} version_id
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTemplate(pipeline_id: string, version_id: string, options?: any) {
-            return PipelineServiceApiFp(configuration).getTemplate(pipeline_id, version_id, options)(fetch, basePath);
+        getTemplate(pipeline_id: string, options?: any) {
+            return PipelineServiceApiFp(configuration).getTemplate(pipeline_id, options)(fetch, basePath);
         },
         /**
          *
@@ -1062,13 +1054,12 @@ export class PipelineServiceApi extends BaseAPI {
      *
      * @summary GetTemplate will get the default template for a given pipeline
      * @param {} pipeline_id
-     * @param {} version_id
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PipelineServiceApi
      */
-    public getTemplate(pipeline_id: string, version_id: string, options?: any) {
-        return PipelineServiceApiFp(this.configuration).getTemplate(pipeline_id, version_id, options)(this.fetch, this.basePath);
+    public getTemplate(pipeline_id: string, options?: any) {
+        return PipelineServiceApiFp(this.configuration).getTemplate(pipeline_id, options)(this.fetch, this.basePath);
     }
 
     /**
