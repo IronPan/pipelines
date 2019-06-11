@@ -35,7 +35,6 @@ steps:
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
   id:   'RunPipeline'
 
-
 images:
 - 'gcr.io/ml-pipeline-dogfood/helloworld-ci:$COMMIT_SHA'
 
