@@ -30,7 +30,7 @@ The pipeline consists of two steps
 - [x] add pipeline version API to KFP backend
 - [x] add pipeline version view to KFP UI
 
-- [ ] add hello world CI sample to build docker image
+- [x] add hello world CI sample to build docker image
 - [ ] add TFX sample
 
 - [x] local run/testing
