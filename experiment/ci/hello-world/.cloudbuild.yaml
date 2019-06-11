@@ -1,0 +1,40 @@
+steps:
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/ml-pipeline-dogfood/helloworld-ci:$COMMIT_SHA',
+         '${_CODE_PATH}/helloworld']
+  id: 'BuildImages'
+- name: 'python:3.6-slim'
+  entrypoint: '/bin/sh'
+  args: ['-c', 'cd ${_CODE_PATH};
+                pip3 install https://storage.googleapis.com/kfpci/kfp-0.1.22.tar.gz;
+                python pipeline.py --commit_id $COMMIT_SHA;
+                cp pipeline.py.zip /workspace/pipeline.zip']
+  id:   'PackagePipeline'
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', '/workspace/pipeline.zip', 'gs://$REPO_NAME/$COMMIT_SHA/pipeline.zip']
+  id:   'UploadPipeline'
+  waitFor: ['PackagePipeline']
+- name: gcr.io/ml-pipeline-dogfood/kfptool
+  entrypoint: '/bin/sh'
+  args: ['-c', '/builder/kubectl.bash;
+                python3 -c "import kfp; client=kfp.Client(namespace=\"$_NAMESPACE\"); client.create_pipeline_version(pipeline_id=\"$_PIPELINE_ID\", name=\"$COMMIT_SHA\", repo_name=\"$REPO_NAME\", commit_sha=\"$COMMIT_SHA\", url=\"https://storage.googleapis.com/$REPO_NAME/$COMMIT_SHA/pipeline.zip\")"']
+  env:
+  - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
+  id:   'CreatePipelineVersion'
+- name: gcr.io/ml-pipeline-dogfood/kfptool
+  entrypoint: '/bin/sh'
+  args: ['-c', '/builder/kubectl.bash;
+                python3 -c "import kfp; client=kfp.Client(namespace=\"$_NAMESPACE\"); exp = client.create_experiment(name=\"$_EXPERIMENT_NAME\"); client.run_pipeline(exp.id, \"$COMMIT_SHA\", \"/workspace/pipeline.zip\")"']
+  env:
+  - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
+  id:   'RunPipeline'
+
+
+substitutions:
+  _CODE_PATH: /workspace/experiment/ci/hello-world
+  _NAMESPACE: kubeflow
+  _PIPELINE_ID: 3326a026-6037-4aeb-b800-644f997049b6
+  _EXPERIMENT_NAME: helloworldcd
