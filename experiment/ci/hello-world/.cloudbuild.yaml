@@ -1,5 +1,4 @@
 steps:
-
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', 
          '-t', 'gcr.io/ml-pipeline-dogfood/helloworld-ci:$COMMIT_SHA',
