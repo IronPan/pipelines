@@ -154,8 +154,9 @@ class PipelineList extends Page<{}, PipelineListState> {
   private _nameCustomRenderer: React.FC<CustomRendererProps<string>> = (props: CustomRendererProps<string>) => {
     return (
       <Link onClick={(e) => e.stopPropagation()}
-        className={commonCss.link}
-        to={RoutePage.PIPELINE_DETAILS.replace(':' + RouteParams.pipelineId, props.id)}>{props.value}
+          className={commonCss.link}
+          to={RoutePage.PIPELINE_DETAILS_NO_VERSION.replace(':' + RouteParams.pipelineId, props.id)}>
+        {props.value}
       </Link>
     );
   }

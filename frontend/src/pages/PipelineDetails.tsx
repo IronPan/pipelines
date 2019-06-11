@@ -354,22 +354,32 @@ class PipelineDetails extends Page<{}, PipelineDetailsState> {
     } else {
       // if fromRunId is not specified, then we have a full pipeline
       const pipelineId = this.props.match.params[RouteParams.pipelineId];
-      const versionId = this.props.match.params[RouteParams.pipelineVersionId];
 
       try {
         pipeline = await Apis.pipelineServiceApi.getPipeline(pipelineId);
 
-        // TODO(rjbauer): this should be in its own try-catch
-        if (versionId) {
-          version = await Apis.pipelineServiceApi.getPipelineVersion(pipelineId, versionId);
-        }
         pageTitle = pipeline.name!;
-        selectedVersion = versionId ? version! : pipeline.default_version;
       } catch (err) {
         await this.showPageError('Cannot retrieve pipeline details.', err);
         logger.error('Cannot retrieve pipeline details.', err);
         return;
       }
+
+      const versionId = this.props.match.params[RouteParams.pipelineVersionId]
+        || pipeline.default_version!.id;
+
+      try {
+        // TODO(rjbauer): it's possible we might not have a version, even default
+        if (versionId) {
+          version = await Apis.pipelineServiceApi.getPipelineVersion(pipelineId, versionId);
+        }
+      } catch (err) {
+        await this.showPageError('Cannot retrieve pipeline version.', err);
+        logger.error('Cannot retrieve pipeline version.', err);
+        return;
+      }
+
+      selectedVersion = versionId ? version! : pipeline.default_version;
 
       try {
         versions = (await Apis.pipelineServiceApi.listPipelineVersions(pipelineId)).versions || [];
