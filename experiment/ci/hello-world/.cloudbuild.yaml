@@ -33,6 +33,9 @@ steps:
   id:   'RunPipeline'
 
 
+images:
+- 'gcr.io/ml-pipeline-dogfood/helloworld-ci:$COMMIT_SHA'
+
 substitutions:
   _CODE_PATH: /workspace/experiment/ci/hello-world
   _NAMESPACE: kubeflow
