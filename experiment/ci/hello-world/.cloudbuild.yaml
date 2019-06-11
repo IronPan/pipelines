@@ -37,6 +37,7 @@ steps:
 
 images:
 - 'gcr.io/ml-pipeline-dogfood/helloworld-ci:$COMMIT_SHA'
+- 'gcr.io/ml-pipeline-dogfood/helloworld-ci:latest'
 
 substitutions:
   _CODE_PATH: /workspace/experiment/ci/hello-world
