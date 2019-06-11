@@ -32,7 +32,7 @@ steps:
 - name: gcr.io/ml-pipeline-dogfood/kfptool
   entrypoint: '/bin/sh'
   args: ['-c', '/builder/kubectl.bash; 
-                python3 -c "import kfp; client=kfp.Client(namespace=\"$_NAMESPACE\"); exp = client.create_experiment(name=\"$_EXPERIMENT_NAME\"); params = {\'output\': \'gs://kfpci-resnet\', \'project-id\': \'$PROJECT_ID\'}; client.run_pipeline(exp.id, \"$COMMIT_SHA\", \'/workspace/resnet-train-pipeline.zip\', params)"']
+                python3 -c "import kfp; client=kfp.Client(namespace=\"$_NAMESPACE\"); exp = client.create_experiment(name=\"$_EXPERIMENT_NAME\"); params = {\"output\": \"gs://kfpci-resnet\", \"project-id\": \"$PROJECT_ID\"}; client.run_pipeline(exp.id, \"$COMMIT_SHA\", \"/workspace/resnet-train-pipeline.zip\", params)"']
   env:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
