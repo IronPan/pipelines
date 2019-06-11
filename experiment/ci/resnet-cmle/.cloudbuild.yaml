@@ -29,6 +29,7 @@ steps:
   env:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
+  id:   'CreatePipelineVersion'
 - name: gcr.io/ml-pipeline-dogfood/kfptool
   entrypoint: '/bin/sh'
   args: ['-c', '/builder/kubectl.bash; 
@@ -36,6 +37,7 @@ steps:
   env:
   - 'CLOUDSDK_COMPUTE_REGION=us-central1-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=kfci'
+  id:   'RunPipeline'
 
 substitutions:
   _CODE_PATH: /workspace/experiment/ci/resnet-cmle
