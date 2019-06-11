@@ -1,7 +1,10 @@
 steps:
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/ml-pipeline-dogfood/helloworld-ci:$COMMIT_SHA',
+  args: ['build', 
+         '-t', 'gcr.io/ml-pipeline-dogfood/helloworld-ci:$COMMIT_SHA',
+         '-t', 'gcr.io/ml-pipeline-dogfood/helloworld-ci:latest',
+         '--cache-from', 'gcr.io/ml-pipeline-dogfood/helloworld-ci:latest',
          '${_CODE_PATH}/helloworld']
   id: 'BuildImages'
 - name: 'python:3.6-slim'
