@@ -123,7 +123,7 @@ export const css = stylesheet({
 class RunDetails extends Page<RunDetailsProps, RunDetailsState> {
   private _onBlur: EventListener;
   private _onFocus: EventListener;
-  private readonly AUTO_REFRESH_INTERVAL = 5000;
+  private readonly AUTO_REFRESH_INTERVAL = 2000;
 
   private _interval?: NodeJS.Timeout;
 
@@ -397,7 +397,7 @@ class RunDetails extends Page<RunDetailsProps, RunDetailsState> {
       let runFinished = this.state.runFinished;
       // If the run has finished, stop auto refreshing
       if (hasFinished(runMetadata.status as NodePhase)) {
-        this._stopAutoRefresh();
+        // this._stopAutoRefresh();
         // This prevents other events, such as onFocus, from resuming the autorefresh
         runFinished = true;
       }
@@ -458,6 +458,9 @@ class RunDetails extends Page<RunDetailsProps, RunDetailsState> {
         buttons.restore(idGetter, true, () => this.refresh()) :
         buttons.archive(idGetter, true, () => this.refresh());
       actions.splice(2, 1, newButton);
+      const retryButton = buttons.retryRun(() => this.state.runMetadata ? [this.state.runMetadata!.id!] : [], true, () => this.refresh());
+      actions.splice(3, 1, retryButton);
+
       actions[1].disabled = runMetadata.status as NodePhase === NodePhase.TERMINATING || runFinished;
       this.props.updateToolbar({ actions, breadcrumbs, pageTitle, pageTitleTooltip: runMetadata.name });
 
@@ -486,14 +489,12 @@ class RunDetails extends Page<RunDetailsProps, RunDetailsState> {
   private async _startAutoRefresh(): Promise<void> {
     // If the run was not finished last time we checked, check again in case anything changed
     // before proceeding to set auto-refresh interval
-    if (!this.state.runFinished) {
-      // refresh() updates runFinished's value
-      await this.refresh();
-    }
+    // refresh() updates runFinished's value
+    await this.refresh();
 
     // Only set interval if run has not finished, and verify that the interval is undefined to
     // avoid setting multiple intervals
-    if (!this.state.runFinished && this._interval === undefined) {
+    if (this._interval === undefined) {
       this._interval = setInterval(
         () => this.refresh(),
         this.AUTO_REFRESH_INTERVAL
