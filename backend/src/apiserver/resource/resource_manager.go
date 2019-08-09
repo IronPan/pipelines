@@ -34,6 +34,8 @@ import (
 	"github.com/pkg/errors"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
 	"k8s.io/apimachinery/pkg/types"
 )
 
@@ -48,6 +50,7 @@ type ClientManagerInterface interface {
 	ObjectStore() storage.ObjectStoreInterface
 	Workflow() workflowclient.WorkflowInterface
 	ScheduledWorkflow() scheduledworkflowclient.ScheduledWorkflowInterface
+	PodClient() corev1.PodInterface
 	Time() util.TimeInterface
 	UUID() util.UUIDGeneratorInterface
 }
@@ -63,6 +66,7 @@ type ResourceManager struct {
 	objectStore             storage.ObjectStoreInterface
 	workflowClient          workflowclient.WorkflowInterface
 	scheduledWorkflowClient scheduledworkflowclient.ScheduledWorkflowInterface
+	podClient               corev1.PodInterface
 	time                    util.TimeInterface
 	uuid                    util.UUIDGeneratorInterface
 }
@@ -79,6 +83,7 @@ func NewResourceManager(clientManager ClientManagerInterface) *ResourceManager {
 		objectStore:             clientManager.ObjectStore(),
 		workflowClient:          clientManager.Workflow(),
 		scheduledWorkflowClient: clientManager.ScheduledWorkflow(),
+		podClient:               clientManager.PodClient(),
 		time:                    clientManager.Time(),
 		uuid:                    clientManager.UUID(),
 	}
@@ -219,6 +224,14 @@ func (r *ResourceManager) CreateRun(apiRun *api.Run) (*model.RunDetail, error) {
 	workflow.OverrideParameters(parameters)
 	// Add label to the workflow so it can be persisted by persistent agent later.
 	workflow.SetLabels(util.LabelKeyWorkflowRunId, runId)
+<<<<<<< HEAD
+=======
+	// Replace {{workflow.uid}} with runId
+	err = workflow.ReplaceUID(runId)
+	if err != nil {
+		return nil, util.NewInternalServerError(err, "Failed to replace workflow ID")
+	}
+>>>>>>> upstream/master
 
 	// Marking auto-added artifacts as optional. Otherwise most older workflows will start failing after upgrade to Argo 2.3.
 	// TODO: Fix the components to explicitly declare the artifacts they really output.
@@ -340,9 +353,18 @@ func (r *ResourceManager) TerminateRun(runId string) error {
 func (r *ResourceManager) RetryRun(runId string) error {
 	runDetail, err := r.checkRunExist(runId)
 	if err != nil {
+<<<<<<< HEAD
 		return util.NewInvalidInputError("Run %s does not exist", runId)
 	}
 
+=======
+		return util.Wrap(err, "Retry run failed")
+	}
+
+	if runDetail.WorkflowRuntimeManifest == "" {
+		return util.NewBadRequestError(errors.New("workflow cannot be retried"), "Workflow must be Failed/Error to retry")
+	}
+>>>>>>> upstream/master
 	var workflow util.Workflow
 	if err := json.Unmarshal([]byte(runDetail.WorkflowRuntimeManifest), &workflow); err != nil {
 		return util.NewInternalServerError(err, "Failed to retrieve the runtime pipeline spec from the run")
@@ -353,6 +375,7 @@ func (r *ResourceManager) RetryRun(runId string) error {
 		return util.Wrap(err, "Retry run failed.")
 	}
 
+<<<<<<< HEAD
 	if err = deletePods(podsToDelete, newWorkflow.ObjectMeta.Namespace); err != nil {
 		return util.NewInternalServerError(err, "Retry run failed. Failed to clean up the failed pods from previous run.")
 	}
@@ -374,6 +397,24 @@ func (r *ResourceManager) RetryRun(runId string) error {
 	_, err = r.workflowClient.Create(newWorkflow.Workflow)
 	if err != nil {
 		return util.NewInternalServerError(err, "Retry run failed. Failed to recover the run to the cluster and continue.")
+=======
+	if err = deletePods(r.podClient, podsToDelete, newWorkflow.ObjectMeta.Namespace); err != nil {
+		return util.NewInternalServerError(err, "Retry run failed. Failed to clean up the failed pods from previous run.")
+	}
+
+	_, updateErr := r.workflowClient.Update(newWorkflow.Workflow)
+	if updateErr == nil {
+		return nil
+	}
+
+	// Remove resource version
+	newWorkflow.ResourceVersion = ""
+	_, createError := r.workflowClient.Create(newWorkflow.Workflow)
+	if createError != nil {
+		return util.NewInternalServerError(createError,
+			"Retry run failed. Failed to create or update the run. Update Error: %s, Create Error: %s",
+			updateErr.Error(), createError.Error())
+>>>>>>> upstream/master
 	}
 
 	return nil

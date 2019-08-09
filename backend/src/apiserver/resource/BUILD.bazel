@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "client_manager_fake.go",
         "model_converter.go",
+        "pod_fake.go",
         "resource_manager.go",
         "resource_manager_util.go",
         "scheduled_workflow_fake.go",
@@ -31,11 +32,20 @@ go_library(
         "@com_github_pkg_errors//:go_default_library",
         "@google_ml_metadata//ml_metadata/metadata_store:metadata_store_go",
         "@google_ml_metadata//ml_metadata/proto:metadata_store_go_proto",
+<<<<<<< HEAD
+=======
+        "@io_k8s_api//core/v1:go_default_library",
+        "@io_k8s_api//policy/v1beta1:go_default_library",
+>>>>>>> upstream/master
         "@io_k8s_apimachinery//pkg/api/errors:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/types:go_default_library",
         "@io_k8s_apimachinery//pkg/watch:go_default_library",
+<<<<<<< HEAD
         "@io_k8s_client_go//kubernetes:go_default_library",
+=======
+        "@io_k8s_client_go//kubernetes/typed/core/v1:go_default_library",
+>>>>>>> upstream/master
         "@io_k8s_client_go//rest:go_default_library",
     ],
 )

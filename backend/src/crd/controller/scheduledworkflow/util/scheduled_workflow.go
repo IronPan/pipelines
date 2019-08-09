@@ -194,7 +194,15 @@ func (s *ScheduledWorkflow) NewWorkflow(
 		return nil, err
 	}
 	result.SetLabels(commonutil.LabelKeyWorkflowRunId, uuid.String())
+<<<<<<< HEAD
 
+=======
+	// Replace {{workflow.uid}} with runId
+	err = result.ReplaceUID(uuid.String())
+	if err != nil {
+		return nil, err
+	}
+>>>>>>> upstream/master
 	// The the owner references.
 	result.SetOwnerReferences(s.ScheduledWorkflow)
 

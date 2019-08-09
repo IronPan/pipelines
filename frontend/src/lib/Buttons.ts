@@ -59,6 +59,7 @@ export default class Buttons {
     };
   }
 
+<<<<<<< HEAD
   public retryRun(getSelectedIds: () => string[], useCurrentResource: boolean,
                  callback: (selectedIds: string[], success: boolean) => void): ToolbarActionConfig {
     return {
@@ -68,6 +69,16 @@ export default class Buttons {
       id: 'retryBtn',
       title: 'Retry',
       tooltip: 'Retry',
+=======
+  public cloneRecurringRun(getSelectedIds: () => string[], useCurrentResource: boolean): ToolbarActionConfig {
+    return {
+      action: () => this._cloneRun(getSelectedIds(), true),
+      disabled: !useCurrentResource,
+      disabledTitle: useCurrentResource ? undefined : 'Select a recurring run to clone',
+      id: 'cloneBtn',
+      title: 'Clone recurring run',
+      tooltip: 'Create a copy from this run\s initial state',
+>>>>>>> upstream/master
     };
   }
 
@@ -233,10 +244,19 @@ export default class Buttons {
     };
   }
 
-  private _cloneRun(selectedIds: string[]): void {
+  private _cloneRun(selectedIds: string[], isRecurring?: boolean): void {
     if (selectedIds.length === 1) {
       const runId = selectedIds[0];
-      const searchString = this._urlParser.build({ [QUERY_PARAMS.cloneFromRun]: runId || '' });
+      let searchTerms;
+      if (isRecurring) {
+        searchTerms = {
+          [QUERY_PARAMS.cloneFromRecurringRun]: runId || '',
+          [QUERY_PARAMS.isRecurring]: '1'
+        };
+      } else {
+        searchTerms = { [QUERY_PARAMS.cloneFromRun]: runId || '' };
+      }
+      const searchString = this._urlParser.build(searchTerms);
       this._props.history.push(RoutePage.NEW_RUN + searchString);
     }
   }

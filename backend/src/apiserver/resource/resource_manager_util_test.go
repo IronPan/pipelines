@@ -237,7 +237,11 @@ status:
 	var workflow util.Workflow
 	err := yaml.Unmarshal([]byte( wf), &workflow)
 	assert.Nil(t, err)
+<<<<<<< HEAD
 	newWf, nodes, err := formulateRetryWorkflow(workflow.Workflow)
+=======
+	newWf, nodes, err := formulateRetryWorkflow(&workflow)
+>>>>>>> upstream/master
 
 	newWfString, err := yaml.Marshal(newWf)
 	assert.Nil(t, err)
