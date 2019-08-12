@@ -17,6 +17,7 @@ package worker
 import (
 	"github.com/kubeflow/pipelines/backend/src/agent/persistence/client"
 	"github.com/kubeflow/pipelines/backend/src/common/util"
+	"github.com/kubeflow/pipelines/bazel-pipelines/external/go_sdk/src/time"
 	log "github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
@@ -29,7 +30,7 @@ type WorkflowSaver struct {
 }
 
 func NewWorkflowSaver(client client.WorkflowClientInterface,
-	pipelineClient client.PipelineClientInterface) *WorkflowSaver {
+		pipelineClient client.PipelineClientInterface) *WorkflowSaver {
 	return &WorkflowSaver{
 		client:          client,
 		pipelineClient:  pipelineClient,
@@ -51,7 +52,11 @@ func (s *WorkflowSaver) Save(key string, namespace string, name string, nowEpoch
 		// Transient failure, we will retry.
 		return util.NewCustomError(err, util.CUSTOM_CODE_TRANSIENT,
 			"Workflow (%s): transient failure: %v", key, err)
+	}
 
+	if wf.PersistedFinalState() && time.Now().Unix()-wf.FinishedAt() < 0 {
+		log.Infof("Skip syncing Workflow (%v): workflow marked as persisted.", name)
+		return nil
 	}
 
 	// Save this Workflow to the database.

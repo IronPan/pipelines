@@ -498,6 +498,8 @@ func (r *ResourceManager) ReportWorkflowResource(workflow *util.Workflow) error 
 	runId := workflow.ObjectMeta.Labels[util.LabelKeyWorkflowRunId]
 	jobId := workflow.ScheduledWorkflowUUIDAsStringOrEmpty()
 
+	workflow.PersistedFinalState()
+
 	if jobId == "" {
 		// If a run doesn't have owner UID, it's a one-time run created by Pipeline API server.
 		// In this case the DB entry should already been created when argo workflow CRD is created.

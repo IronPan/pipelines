@@ -23,6 +23,7 @@ import (
 
 type WorkflowClientInterface interface {
 	Get(namespace string, name string) (wf *util.Workflow, err error)
+	Delete(namespace string, name string) (err error)
 }
 
 // WorkflowClient is a client to call the Workflow API.
@@ -51,6 +52,23 @@ func (c *WorkflowClient) HasSynced() func() bool {
 func (c *WorkflowClient) Get(namespace string, name string) (
 	wf *util.Workflow, err error) {
 	workflow, err := c.informer.Lister().Workflows(namespace).Get(name)
+	if err != nil {
+		var code util.CustomCode
+		if util.IsNotFound(err) {
+			code = util.CUSTOM_CODE_NOT_FOUND
+		} else {
+			code = util.CUSTOM_CODE_GENERIC
+		}
+		return nil, util.NewCustomError(err, code,
+			"Error retrieving workflow (%v) in namespace (%v): %v", name, namespace, err)
+	}
+	return util.NewWorkflow(workflow), nil
+}
+
+// Get returns a Workflow, given a namespace and name.
+func (c *WorkflowClient) Delete(namespace string, name string) (
+		wf *util.Workflow, err error) {
+	workflow, err := c.informer.Lister().Workflows(namespace).(name)
 	if err != nil {
 		var code util.CustomCode
 		if util.IsNotFound(err) {

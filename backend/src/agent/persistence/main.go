@@ -16,6 +16,7 @@ package main
 
 import (
 	"flag"
+	"k8s.io/client-go/rest"
 	"time"
 
 	workflowclientSet "github.com/argoproj/argo/pkg/client/clientset/versioned"
@@ -78,6 +79,9 @@ func main() {
 
 	var swfInformerFactory swfinformers.SharedInformerFactory
 	var workflowInformerFactory workflowinformers.SharedInformerFactory
+	restConfig, err := rest.InClusterConfig()
+	wfClientSet := workflowclientSet.NewForConfigOrDie(restConfig)
+	wfClient := wfClientSet.ArgoprojV1alpha1().Workflows(namespace)
 	if namespace == "" {
 		swfInformerFactory = swfinformers.NewSharedInformerFactory(swfClient, time.Second*30)
 		workflowInformerFactory = workflowinformers.NewSharedInformerFactory(workflowClient, time.Second*30)
@@ -85,6 +89,13 @@ func main() {
 		swfInformerFactory = swfinformers.NewFilteredSharedInformerFactory(swfClient, time.Second*30, namespace, nil)
 		workflowInformerFactory = workflowinformers.NewFilteredSharedInformerFactory(workflowClient, time.Second*30, namespace, nil)
 	}
+
+
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to initialize workflow client.")
+	}
+	wfClientSet := argoclient.NewForConfigOrDie(restConfig)
+	wfClient := wfClientSet.ArgoprojV1alpha1().Workflows(namespace)
 
 	pipelineClient, err := client.NewPipelineClient(
 		initializeTimeout,
