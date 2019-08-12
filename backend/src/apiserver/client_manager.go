@@ -17,6 +17,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/spf13/viper"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"os"
 	"strconv"
@@ -155,7 +156,7 @@ func (c *ClientManager) init() {
 		getStringConfig(podNamespace), getDurationConfig(initConnectionTimeout))
 
 	metadataStore := initMetadataStore()
-	runStore := storage.NewRunStore(db, c.time, metadataStore)
+	runStore := storage.NewRunStore(db, c.time, metadataStore, viper.GetInt("MaximumActiveRuns"))
 	c.runStore = runStore
 
 	glog.Infof("Client manager initialized successfully")

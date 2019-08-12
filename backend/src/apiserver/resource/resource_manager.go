@@ -197,6 +197,8 @@ func (r *ResourceManager) GetPipelineTemplate(pipelineId string) ([]byte, error)
 }
 
 func (r *ResourceManager) CreateRun(apiRun *api.Run) (*model.RunDetail, error) {
+	if r.runStore.GetActiveRunsCount() >
+
 	// Get workflow from pipeline spec, which might be pipeline ID or an argo workflow
 	workflowSpecManifestBytes, err := r.getWorkflowSpecBytes(apiRun.GetPipelineSpec())
 	if err != nil {

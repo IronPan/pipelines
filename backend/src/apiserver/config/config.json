@@ -8,5 +8,6 @@
     "SecretAccessKey": "minio123",
     "BucketName": "mlpipeline"
   },
-  "InitConnectionTimeout": "6m"
+  "InitConnectionTimeout": "6m",
+  "MaximumActiveRuns": 180000
 }

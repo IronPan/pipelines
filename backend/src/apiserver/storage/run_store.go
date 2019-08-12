@@ -42,6 +42,8 @@ type RunStoreInterface interface {
 
 	ListRuns(filterContext *common.FilterContext, opts *list.Options) ([]*model.Run, int, string, error)
 
+	ExceedMaximumActiveRunsCount() bool
+
 	// Create a run entry in the database
 	CreateRun(run *model.RunDetail) (*model.RunDetail, error)
 
@@ -72,6 +74,7 @@ type RunStore struct {
 	resourceReferenceStore *ResourceReferenceStore
 	time                   util.TimeInterface
 	metadataStore          *metadata.Store
+	maximumActiveRuns      int
 }
 
 // Runs two SQL queries in a transaction to return a list of matching runs, as well as their
@@ -549,6 +552,25 @@ func (s *RunStore) ReportMetric(metric *model.RunMetric) (err error) {
 	return nil
 }
 
+func (s *RunStore) ExceedMaximumActiveRunsCount() (bool, error) {
+	sql, args, err := sq.Select("count(*)").From("run_details").
+		Where(sq.And{sq.NotEq{"Conditions": workflowapi.NodeFailed}, sq.NotEq{"Conditions": workflowapi.NodeSucceeded}}).
+		Limit(1).
+		ToSql()
+
+	sizeRow, err := s.db.Query(sql, args...)
+	if err != nil {
+		return false, util.NewInternalServerError(err, "Failed to get number of total active runs.")
+	}
+
+	total_size, err := list.ScanRowToTotalSize(sizeRow)
+	if err != nil {
+		return false, util.NewInternalServerError(err, "Failed to get number of total active runs.")
+	}
+
+	return total_size > s.maximumActiveRuns, nil
+}
+
 func (s *RunStore) toListableModels(runs []model.RunDetail) []model.ListableDataModel {
 	models := make([]model.ListableDataModel, len(runs))
 	for i := range models {
@@ -567,12 +589,13 @@ func (s *RunStore) toRunMetadatas(models []model.ListableDataModel) []model.Run 
 
 // NewRunStore creates a new RunStore. If metadataStore is non-nil, it will be
 // used to record artifact metadata.
-func NewRunStore(db *DB, time util.TimeInterface, metadataStore *metadata.Store) *RunStore {
+func NewRunStore(db *DB, time util.TimeInterface, metadataStore *metadata.Store, maximumActiveRuns int) *RunStore {
 	return &RunStore{
 		db:                     db,
 		resourceReferenceStore: NewResourceReferenceStore(db),
 		time:                   time,
 		metadataStore:          metadataStore,
+		maximumActiveRuns:      maximumActiveRuns,
 	}
 }
 
