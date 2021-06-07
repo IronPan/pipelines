@@ -25,7 +25,7 @@ implementation:
     image: gcr.io/managed-pipeline-test/gcp-launcher:v2
     command: [python, /launcher.py]
     args: [
-      --gcp-project, {inputValue: gcp-project},
+      --gcp-project, {inputValue: gcp_project},
       --gcp-region, {inputValue: gcp_region},
       --payload, {inputValue: payload},
       --gcp-resources, {outputPath: gcp_resources},
