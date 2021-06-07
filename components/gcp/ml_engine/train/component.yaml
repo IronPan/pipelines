@@ -1,4 +1,18 @@
-name: Create custom job
+# Copyright 2021 The Kubeflow Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Submitting a CustomJob
 inputs:
 - {name: gcp_project, type: String}
 - {name: gcp_region, type: String}
@@ -7,82 +21,11 @@ outputs:
 - {name: job_id, type: String}
 implementation:
   container:
-    image: gcr.io/google-samples/automl-ucaip:v1
-    command:
-    - sh
-    - -ec
-    - |
-      program_path=$(mktemp)
-      printf "%s" "$0" > "$program_path"
-      python3 -u "$program_path" "$@"
-    - |
-      def _make_parent_dirs_and_return_path(file_path: str):
-          import os
-          os.makedirs(os.path.dirname(file_path), exist_ok=True)
-          return file_path
-
-      def create_custom_job(
-          gcp_project,
-          gcp_region,
-          payload,
-          job_id,
-      ):
-
-        import logging
-        import subprocess
-        import time
-        from google.cloud import aiplatform
-        from google.protobuf import json_format
-        from google.protobuf.struct_pb2 import Value
-
-        logging.getLogger().setLevel(logging.INFO)
-        logging.info('launching start')
-
-        client_options = {"api_endpoint": gcp_region+'-aiplatform.googleapis.com'}
-        # Initialize client that will be used to create and send requests.
-        job_client = aiplatform.gapic.JobServiceClient(client_options=client_options)
-
-        parent = f"projects/{gcp_project}/locations/{gcp_region}"
-        job_spec = {
-            "display_name": 'yang-customjob-fpc-test-1',
-            'job_spec': {
-                "worker_pool_specs": [
-                    {
-                        "replica_count": 1,
-                        "machine_spec": {
-                            "machine_type": "n1-standard-4",
-                        },
-                        "container_spec": {
-                            "image_uri": "busybox",
-                            "command": [
-                                "sleep",
-                                "60"
-                            ],
-                        },
-                    }
-                ]
-            },
-            'labels': {'vertex-pipeline-job-id': '123'},
-        }
-        response = job_client.create_custom_job(parent=parent, custom_job=job_spec)
-
-        print("response is", response)
-
-      import argparse
-      _parser = argparse.ArgumentParser(prog='Create custom job', description='')
-      _parser.add_argument("--gcp-project", dest="gcp_project", type=str, required=True, default=argparse.SUPPRESS)
-      _parser.add_argument("--gcp-region", dest="gcp_region", type=str, required=True, default=argparse.SUPPRESS)
-      _parser.add_argument("--payload", dest="payload", type=str, required=True, default=argparse.SUPPRESS)
-      _parser.add_argument("--job-id", dest="job_id", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
-      _parsed_args = vars(_parser.parse_args())
-
-      _outputs = create_custom_job(**_parsed_args)
-    args:
-    - --gcp-project
-    - {inputValue: gcp_project}
-    - --gcp-region
-    - {inputValue: gcp_region}
-    - --payload
-    - {inputValue: payload}
-    - --job-id
-    - {outputPath: job_id}
+    image: gcr.io/managed-pipeline-test/gcp-launcher:v1
+    command: [python, /launcher.py]
+    args: [
+      --gcp-project, {inputValue: gcp-project},
+      --gcp_region, {inputValue: gcp_region},
+      --payload, {inputValue: payload},
+      --job_id, {outputPath: job_id},
+    ]
