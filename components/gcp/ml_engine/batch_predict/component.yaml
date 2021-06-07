@@ -14,18 +14,19 @@
 
 name: Submitting a CustomJob
 inputs:
+- {name: type, type: String}
 - {name: gcp_project, type: String}
 - {name: gcp_region, type: String}
 - {name: payload, type: String}
 outputs:
-- {name: job_id, type: String}
+- {name: gcp_resources, type: String}
 implementation:
   container:
-    image: gcr.io/managed-pipeline-test/gcp-launcher:v1
+    image: gcr.io/managed-pipeline-test/gcp-launcher:v2
     command: [python, /launcher.py]
     args: [
       --gcp-project, {inputValue: gcp-project},
       --gcp-region, {inputValue: gcp_region},
       --payload, {inputValue: payload},
-      --job-id, {outputPath: job_id},
+      --gcp-resources, {outputPath: gcp_resources},
     ]
