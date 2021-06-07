@@ -14,7 +14,7 @@
 
 name: Submitting a CustomJob
 inputs:
-- {name: type, type: String}
+- {name: type, type: String, default: 'CustomJob'}
 - {name: gcp_project, type: String}
 - {name: gcp_region, type: String}
 - {name: payload, type: String}
